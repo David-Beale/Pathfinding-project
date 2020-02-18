@@ -1,6 +1,8 @@
 class Vertex {
-  constructor (value) {
+  constructor (value,x,y) {
     this.value = value;
+    this.x = x;
+    this.y = y;
     this.edges = [];
   }
   getEdges () {
@@ -10,7 +12,7 @@ class Vertex {
     }
     return newArr;
   }
-  addEdge (vertex, weight = 0) {
+  addEdge (vertex, weight = 1) {
     this.edges.push([vertex, weight]);
   }
 }

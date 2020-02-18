@@ -1,4 +1,3 @@
-let arr = [];
-arr[0]=[]
-arr[0][0] = 1
+let arr = [1]
+arr.push(2)
 console.log(arr)
