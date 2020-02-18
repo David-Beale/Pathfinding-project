@@ -19,13 +19,24 @@ const drawMap = () => {
   c.fillRect(1200, 200, 100, 400)
   c.fillRect(900, 200, 100, 400)
   c.fillRect(900, 500, 500, 100)
+  c.fillRect(1000, 500, 100, 400)
+  c.fillRect(1100, 900, -600, 100)
+  c.fillRect(500, 900, 100, -300)
 }
 
 const drawCircle = (x, y, radius) => {
   c.beginPath();
   c.arc(x, y, radius, 0, Math.PI * 2, false);
-  c.fillStyle = 'green'
-  c.strokeStyle = 'green';
+  c.fillStyle = 'blue'
+  c.strokeStyle = 'blue';
+  c.stroke();
+  c.fill()
+}
+const drawBlackCircle = (x, y, radius) => {
+  c.beginPath();
+  c.arc(x, y, radius, 0, Math.PI * 2, false);
+  c.fillStyle = 'rgb(0,0,0)'
+  c.strokeStyle = 'rgb(0,0,0)';
   c.stroke();
   c.fill()
 }
@@ -66,51 +77,9 @@ for (let i = 0; i < window.innerWidth; i += 100) {
 
 //////////////////////////////////////////////////////////////////*END*  SET UP GRAPH////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////*START*  EVENT LISTENER////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////*END*  EVENT LISTENER////////////////////////////////////////////////////////////////
-const radius = 50;
-
-let initialClick = false;
-let secondClick = false;
-window.addEventListener('mousedown', function (e) {
-  if(initialClick === false) {
-    clickX = Math.floor((e.pageX/100))*100 + radius;
-    clickY = Math.floor((e.pageY/100))*100 + radius;
-    drawCircle(clickX, clickY, radius);
-    initialClick = true;
-  }
-
-  console.log(clickX, clickY)
-})
-
-//////////////////////////////////////////////////////////////////*START*  PATHFINDER////////////////////////////////////////////////////////////////
-
-const start = 1;
-const end = 10;
-
-const pathArray = dijkstra(map.graphObj, start, end)[1];
-//////////////////////////////////////////////////////////////////*END*  PATHFINDER////////////////////////////////////////////////////////////////
-
 //////////////////////////////////////////////////////////////////*START*  ANIMATION////////////////////////////////////////////////////////////////
 
-////////*START*initial conditions/////////////
 
-let speed = 10;
-
-let dx;
-let dy;
-let i = 0;
-let x = map.graphObj[start].x + radius;
-let y = map.graphObj[start].y + radius;
-let finalX = map.graphObj[end].x + radius;
-let finalY = map.graphObj[end].y + radius;
-let requireNewPath = true;
-let reachedDestination = false;
-let direction;
-let targetX;
-let targetY;
-////////*END*initial conditions/////////////
 
 const nextDirection = (currentVertex, nextVertex) => {
   currentX = currentVertex.x + radius;
@@ -173,7 +142,118 @@ function animate () {
     reachedDestination = true;
   }
 }
-
-
+function growCircle () {
+  const circleAnimation = requestAnimationFrame(growCircle);
+  if (initialRadius >= radius) {
+    initialRadius = 0;
+    cancelAnimationFrame(circleAnimation)
+  }
+  drawCircle(clickX, clickY, initialRadius);
+  initialRadius += pulseSpeed;
+}
+function pulseCircle () {
+  const pulseAnimation = requestAnimationFrame(pulseCircle);
+  if (initialRadius >= radius/1.5) {
+    pulseSpeed = -pulseSpeed;
+  }
+  if (initialRadius < 0) {
+    initialRadius = 0;
+    pulseSpeed = 5;
+    cancelAnimationFrame(pulseAnimation)
+    animate();
+  }
+  if(pulseSpeed<0) drawBlackCircle(clickX, clickY, radius/1.5)
+  drawCircle(clickX, clickY, initialRadius);
+  initialRadius += pulseSpeed;
+}
 //////////////////////////////////////////////////////////////////*END*  ANIMATION////////////////////////////////////////////////////////////////
-animate();
+
+//////////////////////////////////////////////////////////////////*START*  EVENT LISTENER////////////////////////////////////////////////////////////////
+////////*START*initial conditions/////////////
+
+let pulseSpeed = 5;
+let speed = 10;
+const radius = 50;
+let initialRadius = 0;
+let dx;
+let dy;
+let i = 0;
+
+let requireNewPath = true;
+let reachedDestination = false;
+let direction;
+let targetX;
+let targetY;
+let start;
+let end;
+let pathArray;
+let x;
+let y;
+let finalX;
+let finalY;
+////////*END*initial conditions/////////////
+
+
+const arrayOfVertices = Object.keys(map.graphObj)
+let initialClick = false;
+let secondClick = false;
+let clickX;
+let clickY;
+window.addEventListener('mousedown', function (e) {
+  if (initialClick === false) {
+    clickX = Math.floor((e.pageX / 100)) * 100 + radius;
+    clickY = Math.floor((e.pageY / 100)) * 100 + radius;
+    for (let i = 0; i < arrayOfVertices.length; i++) {
+      if (map.graphObj[arrayOfVertices[i]].x === clickX - radius && map.graphObj[arrayOfVertices[i]].y === clickY - radius) {
+        growCircle();
+        start = arrayOfVertices[i]
+        x = clickX;
+        y = clickY;
+        i = arrayOfVertices.length
+        initialClick = true;
+      }
+    }
+  }
+  else if (initialClick === true && secondClick === false) {
+    clickX = Math.floor((e.pageX / 100)) * 100 + radius;
+    clickY = Math.floor((e.pageY / 100)) * 100 + radius;
+    for (let i = 0; i < arrayOfVertices.length; i++) {
+      if (map.graphObj[arrayOfVertices[i]].x === clickX - radius && map.graphObj[arrayOfVertices[i]].y === clickY - radius) {
+        end = arrayOfVertices[i]
+        finalX = clickX;
+        finalY = clickY;
+        i = arrayOfVertices.length
+      }
+    }
+    secondClick = true;
+    pathArray = dijkstra(map.graphObj, start, end)[1];
+    pulseCircle();
+    
+  }
+  else if (initialClick === true && secondClick === true) {
+    start = end;
+    x = clickX;
+    y = clickY;
+    i = 0;
+    requireNewPath = true;
+    reachedDestination = false;
+    clickX = Math.floor((e.pageX / 100)) * 100 + radius;
+    clickY = Math.floor((e.pageY / 100)) * 100 + radius;
+    for (let i = 0; i < arrayOfVertices.length; i++) {
+      if (map.graphObj[arrayOfVertices[i]].x === clickX - radius && map.graphObj[arrayOfVertices[i]].y === clickY - radius) {
+        end = arrayOfVertices[i]
+        finalX = clickX;
+        finalY = clickY;
+        i = arrayOfVertices.length
+      }
+    }
+    pathArray = dijkstra(map.graphObj, start, end)[1];
+    pulseCircle();
+  }
+})
+
+//////////////////////////////////////////////////////////////////*END*  EVENT LISTENER////////////////////////////////////////////////////////////////
+
+
+
+// animate();
