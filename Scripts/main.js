@@ -9,7 +9,18 @@ canvas.height = window.innerHeight;
 
 const c = canvas.getContext('2d');
 
-const drawMap = () => {
+const drawTrafficLightBottom = (x, y, color) => {
+  c.fillStyle = 'rgb(55, 54, 58)'
+  c.fillRect(x + 10, y + 78, 20, 20)
+  c.beginPath();
+  c.arc(x + 20, y + 88, 5, 0, Math.PI * 2, false);
+  c.fillStyle = color
+  c.strokeStyle = color;
+  c.stroke();
+  c.fill()
+}
+
+const drawMap = (counter) => {
   c.fillStyle = 'rgb(0,0,0)'
   c.fillRect(200, 100, 500, 100)
   c.fillRect(100, 600, 500, 100)
@@ -22,6 +33,15 @@ const drawMap = () => {
   c.fillRect(1000, 500, 100, 400)
   c.fillRect(1100, 900, -600, 100)
   c.fillRect(500, 900, 100, -300)
+  drawTrafficLightBottom(700, 200, 'red')
+  if (counter >= 0 && counter <= 40) drawTrafficLightBottom(700, 200, 'red')
+  if (counter > 40 && counter <= 60) drawTrafficLightBottom(700, 200, 'yellow')
+  if (counter > 60 && counter <= 160) drawTrafficLightBottom(700, 200, 'green')
+  if (counter > 160 && counter <= 180) drawTrafficLightBottom(700, 200, 'yellow')
+  if (counter > 180 && counter <= 240) {
+    drawTrafficLightBottom(700, 200, 'red')
+    counter = 0;
+  }
 }
 
 const drawCircle = (x, y, radius) => {
@@ -109,17 +129,26 @@ const nextDirection = (currentVertex, nextVertex) => {
   }
   return dx, dy, targetX, targetY;
 }
-
+let counter = 0;
 function animate () {
   const animation = requestAnimationFrame(animate);
 
   c.clearRect(0, 0, innerWidth, innerHeight);
-  drawMap();
+  drawMap(counter);
+
+  if (counter >= 0 && counter <= 40) map.graphObj[25].light = 'red'
+  if (counter > 40 && counter <= 60) map.graphObj[25].light = 'yellow'
+  if (counter > 60 && counter <= 160) map.graphObj[25].light = 'green'
+  if (counter > 160 && counter <= 180) map.graphObj[25].light = 'yellow'
+  if (counter > 180 && counter <= 240) map.graphObj[25].light = 'red'
+
+  counter++;
   drawCircle(x, y, radius);
 
   if (reachedDestination === true) {
     dx = 0;
     dy = 0;
+    counter = 0;
     cancelAnimationFrame(animation)
   }
   if (requireNewPath) {
@@ -128,7 +157,13 @@ function animate () {
     let nextVertexName = pathArray[i + 1];
     let nextVertex = map.graphObj[nextVertexName]
     dx, dy, targetX, targetY = nextDirection(currentVertex, nextVertex)
-    requireNewPath = false;
+    if (currentVertex.light) {
+      if (currentVertex.light === 'green' || direction !== 'Left') {
+        requireNewPath = false;
+      } else {
+        dx = dy = 0;
+      }
+    }
   }
 
   x += dx;
@@ -153,7 +188,7 @@ function growCircle () {
 }
 function pulseCircle () {
   const pulseAnimation = requestAnimationFrame(pulseCircle);
-  if (initialRadius >= radius/1.5) {
+  if (initialRadius >= radius / 1.5) {
     pulseSpeed = -pulseSpeed;
   }
   if (initialRadius < 0) {
@@ -162,7 +197,7 @@ function pulseCircle () {
     cancelAnimationFrame(pulseAnimation)
     animate();
   }
-  if(pulseSpeed<0) drawBlackCircle(clickX, clickY, radius/1.5)
+  if (pulseSpeed < 0) drawBlackCircle(clickX, clickY, radius / 1.5)
   drawCircle(clickX, clickY, initialRadius);
   initialRadius += pulseSpeed;
 }
@@ -172,7 +207,7 @@ function pulseCircle () {
 ////////*START*initial conditions/////////////
 
 let pulseSpeed = 5;
-let speed = 10;
+let speed = 5;
 const radius = 50;
 let initialRadius = 0;
 let dx;
@@ -205,6 +240,7 @@ window.addEventListener('mousedown', function (e) {
     clickY = Math.floor((e.pageY / 100)) * 100 + radius;
     for (let i = 0; i < arrayOfVertices.length; i++) {
       if (map.graphObj[arrayOfVertices[i]].x === clickX - radius && map.graphObj[arrayOfVertices[i]].y === clickY - radius) {
+        console.log(arrayOfVertices[i])
         growCircle();
         start = arrayOfVertices[i]
         x = clickX;
@@ -228,7 +264,7 @@ window.addEventListener('mousedown', function (e) {
     secondClick = true;
     pathArray = dijkstra(map.graphObj, start, end)[1];
     pulseCircle();
-    
+
   }
   else if (initialClick === true && secondClick === true) {
     start = end;
