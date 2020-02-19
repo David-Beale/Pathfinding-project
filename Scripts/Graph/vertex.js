@@ -4,6 +4,8 @@ class Vertex {
     this.x = x;
     this.y = y;
     this.edges = [];
+    this.occupied = false;
+    this.light = 'green'
   }
   getEdges () {
     let newArr = [];

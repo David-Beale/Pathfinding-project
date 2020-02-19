@@ -57,6 +57,14 @@ const drawRedCircle = (x, y, radius) => {
   c.stroke();
   c.fill()
 }
+const drawYellowCircle = (x, y, radius) => {
+  c.beginPath();
+  c.arc(x, y, radius, 0, Math.PI * 2, false);
+  c.fillStyle = 'rgba(191, 191, 63, 0.35)'
+  c.strokeStyle = 'red';
+  c.stroke();
+  c.fill()
+}
 
 const drawOutlineCircle = (x, y, radius) => {
   c.beginPath();
@@ -147,6 +155,14 @@ function animate () {
   if (counter > 220 && counter <= 240) map.graphObj[25].light = 'yellow'
 
   counter++;
+  for (let index = 1; index < arrayOfVertices.length; index++) {
+    // console.log(map.graphObj[index])
+    if (map.graphObj[index].occupied) {
+      drawYellowCircle(map.graphObj[index].x + radius, map.graphObj[index].y + radius, radius + 10)
+    }
+  }
+
+  // Circle will grow in size when first placed on map
   if (initializing) {
     if (initialRadius > radius) {
       initialRadius = 0;
@@ -155,10 +171,11 @@ function animate () {
     drawCircle(clickX, clickY, initialRadius);
     initialRadius += pulseSpeed;
   }
-
+  // For subsequent renders, just draw a circle
   if (initialClick && !initializing) {
     drawCircle(x, y, radius);
   }
+  // Clicking a destination will create a pulse circle
   if (pulseCircle) {
     if (initialRadius >= radius / 1.5) {
       pulseSpeed = -pulseSpeed;
@@ -178,19 +195,28 @@ function animate () {
     dy = 0;
   }
   if (requireNewPath) {
+
+    // let previousVertex;
+    // if(pathArray[i-1]) {
+    //   previousVertex = map.graphObj[pathArray[i-1]]
+    //   previousVertex.occupied = false;
+    // }
     let currentVertexName = pathArray[i]
     let currentVertex = map.graphObj[currentVertexName]
     let nextVertexName = pathArray[i + 1];
     let nextVertex = map.graphObj[nextVertexName]
     let tempArray = nextDirection(currentVertex, nextVertex)
-    dx = tempArray[0]; dy=tempArray[1]; targetX=tempArray[2]; targetY=tempArray[3];
-    if (currentVertex.light) {
-      if (currentVertex.light === 'green' || direction !== 'Left') {
+    dx = tempArray[0]; dy = tempArray[1]; targetX = tempArray[2]; targetY = tempArray[3];
+    if (!nextVertex.occupied) {
+      if (currentVertex.light !== 'red' || direction !== 'Left') {
         requireNewPath = false;
+        currentVertex.occupied = false;
+        nextVertex.occupied = true;
       } else {
         dx = dy = 0;
       }
-    }
+    } else dx = dy = 0;
+
   }
   if (!reachedDestination) {
     x += dx;
@@ -206,23 +232,44 @@ function animate () {
   }
 
   if (computerInit) {
-    computerX = computerStartVertex.x + radius;
-    computerY = computerStartVertex.y + radius;
+    computerX = computerCurrentVertex.x + radius;
+    computerY = computerCurrentVertex.y + radius;
     computerInit = false;
   }
   if (computerRequireNewPath) {
-    possibleDestinations = computerStartVertex.getEdges();
-    if (possibleDestinations.length === 1) computerNextVertex = map.graphObj[possibleDestinations[0]];
-    else {
-      possibleDestinations = possibleDestinations.filter(destination => destination !== computerPrevVertex.value)
-      let rand = Math.floor(Math.random() * possibleDestinations.length)
-      computerNextVertex = map.graphObj[possibleDestinations[rand]];
+    //GET POSSIBLE DESTINATIONS//
+    possibleDestinations = computerCurrentVertex.getEdges();
+    while (computerRequireNewPath) {
+
+      //IF IT IS A DEAD END, CAR IS ALLOWED TO GO BACKWARDS//
+      if (possibleDestinations.length <= 1) {
+        computerNextVertex = computerPrevVertex;
+        computerRequireNewPath = false;
+        computerCurrentVertex.occupied = false;
+        computerNextVertex.occupied = true;
+      }
+      //OTHERWISE BACKWARDS DIRECTION IS NOT ALLOWED. RANDOM DIRECTION FROM REMAINING OPTIONS SLECTED//
+      else {
+        possibleDestinations = possibleDestinations.filter(destination => destination !== computerPrevVertex.value)
+        let rand = Math.floor(Math.random() * possibleDestinations.length)
+        computerNextVertex = map.graphObj[possibleDestinations[rand]];
+        if (computerNextVertex.occupied) {
+          possibleDestinations.splice(rand, 1);
+        }
+        else {
+          computerRequireNewPath = false;
+          computerCurrentVertex.occupied = false;
+          computerNextVertex.occupied = true;
+        }
+      }
     }
-    let tempArray = nextDirection(computerStartVertex, computerNextVertex)
-    compDx = tempArray[0]; compDy=tempArray[1]; compTargetX=tempArray[2]; compTargetY=tempArray[3];
-    computerRequireNewPath = false;
-    computerPrevVertex = computerStartVertex;
-    computerStartVertex = computerNextVertex;
+
+    //GET DIRECTIONS BASED ON NEXT DESTINATION
+    let tempArray = nextDirection(computerCurrentVertex, computerNextVertex)
+    compDx = tempArray[0]; compDy = tempArray[1]; compTargetX = tempArray[2]; compTargetY = tempArray[3];
+
+    computerPrevVertex = computerCurrentVertex;
+    computerCurrentVertex = computerNextVertex;
   }
   computerX += compDx;
   computerY += compDy;
@@ -258,6 +305,7 @@ let y;
 let finalX;
 let finalY;
 const arrayOfVertices = Object.keys(map.graphObj)
+let initialVertex
 let initializing = false;
 let initialClick = false;
 let secondClick = false;
@@ -266,7 +314,7 @@ let clickX;
 let clickY;
 let computerInit = true;
 // let computerStartVertex = map.graphObj[Math.floor((Math.random() * arrayOfVertices.length))]
-let computerStartVertex = map.graphObj[1]
+let computerCurrentVertex = map.graphObj[1]
 let computerRequireNewPath = true;
 let computerPrevVertex = false;
 let computerNextVertex;
@@ -287,6 +335,8 @@ function eventListener (e) {
       if (map.graphObj[arrayOfVertices[i]].x === clickX - radius && map.graphObj[arrayOfVertices[i]].y === clickY - radius) {
         console.log(arrayOfVertices[i])
         initializing = true;
+        initialVertex = map.graphObj[arrayOfVertices[i]]
+        initialVertex.occupied = true;
         start = arrayOfVertices[i]
         x = clickX;
         y = clickY;
@@ -308,7 +358,7 @@ function eventListener (e) {
         reachedDestination = false;
         secondClick = true;
         pulseCircle = true;
-        i = arrayOfVertices.length
+        i = arrayOfVertices.length //end for loop
       }
     }
 
