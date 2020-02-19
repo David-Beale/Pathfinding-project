@@ -49,6 +49,14 @@ const drawCircle = (x, y, radius) => {
   c.stroke();
   c.fill()
 }
+const drawRedCircle = (x, y, radius) => {
+  c.beginPath();
+  c.arc(x, y, radius, 0, Math.PI * 2, false);
+  c.fillStyle = 'red'
+  c.strokeStyle = 'red';
+  c.stroke();
+  c.fill()
+}
 
 const drawOutlineCircle = (x, y, radius) => {
   c.beginPath();
@@ -98,32 +106,34 @@ for (let i = 0; i < window.innerWidth; i += 100) {
 
 
 const nextDirection = (currentVertex, nextVertex) => {
-  currentX = currentVertex.x + radius;
-  currentY = currentVertex.y + radius;
-  targetX = nextVertex.x + radius;
-  targetY = nextVertex.y + radius;
+  let currentX = currentVertex.x + radius;
+  let currentY = currentVertex.y + radius;
+  let newX = nextVertex.x + radius;
+  let newY = nextVertex.y + radius;
+  let changeX
+  let changeY
 
-  if (currentX - targetX > 0) {
+  if (currentX - newX > 0) {
     direction = 'Left'
-    dx = -speed;
-    dy = 0;
+    changeX = -speed;
+    changeY = 0;
   }
-  if (currentX - targetX < 0) {
+  if (currentX - newX < 0) {
     direction = 'Right'
-    dx = speed;
-    dy = 0;
+    changeX = speed;
+    changeY = 0;
   }
-  if (currentY - targetY > 0) {
+  if (currentY - newY > 0) {
     direction = 'Up'
-    dx = 0;
-    dy = -speed;
+    changeX = 0;
+    changeY = -speed;
   }
-  if (currentY - targetY < 0) {
+  if (currentY - newY < 0) {
     direction = 'Down'
-    dx = 0;
-    dy = speed;
+    changeX = 0;
+    changeY = speed;
   }
-  return dx, dy, targetX, targetY;
+  return [changeX, changeY, newX, newY];
 }
 
 function animate () {
@@ -172,7 +182,8 @@ function animate () {
     let currentVertex = map.graphObj[currentVertexName]
     let nextVertexName = pathArray[i + 1];
     let nextVertex = map.graphObj[nextVertexName]
-    dx, dy, targetX, targetY = nextDirection(currentVertex, nextVertex)
+    let tempArray = nextDirection(currentVertex, nextVertex)
+    dx = tempArray[0]; dy=tempArray[1]; targetX=tempArray[2]; targetY=tempArray[3];
     if (currentVertex.light) {
       if (currentVertex.light === 'green' || direction !== 'Left') {
         requireNewPath = false;
@@ -194,6 +205,31 @@ function animate () {
     }
   }
 
+  if (computerInit) {
+    computerX = computerStartVertex.x + radius;
+    computerY = computerStartVertex.y + radius;
+    computerInit = false;
+  }
+  if (computerRequireNewPath) {
+    possibleDestinations = computerStartVertex.getEdges();
+    if (possibleDestinations.length === 1) computerNextVertex = map.graphObj[possibleDestinations[0]];
+    else {
+      possibleDestinations = possibleDestinations.filter(destination => destination !== computerPrevVertex.value)
+      let rand = Math.floor(Math.random() * possibleDestinations.length)
+      computerNextVertex = map.graphObj[possibleDestinations[rand]];
+    }
+    let tempArray = nextDirection(computerStartVertex, computerNextVertex)
+    compDx = tempArray[0]; compDy=tempArray[1]; compTargetX=tempArray[2]; compTargetY=tempArray[3];
+    computerRequireNewPath = false;
+    computerPrevVertex = computerStartVertex;
+    computerStartVertex = computerNextVertex;
+  }
+  computerX += compDx;
+  computerY += compDy;
+  if (computerX === compTargetX && computerY === compTargetY) {
+    computerRequireNewPath = true;
+  }
+  drawRedCircle(computerX, computerY, radius)
 }
 
 //////////////////////////////////////////////////////////////////*END*  ANIMATION////////////////////////////////////////////////////////////////
@@ -221,9 +257,6 @@ let x;
 let y;
 let finalX;
 let finalY;
-////////*END*initial conditions/////////////
-
-
 const arrayOfVertices = Object.keys(map.graphObj)
 let initializing = false;
 let initialClick = false;
@@ -231,6 +264,21 @@ let secondClick = false;
 let pulseCircle = false;
 let clickX;
 let clickY;
+let computerInit = true;
+// let computerStartVertex = map.graphObj[Math.floor((Math.random() * arrayOfVertices.length))]
+let computerStartVertex = map.graphObj[1]
+let computerRequireNewPath = true;
+let computerPrevVertex = false;
+let computerNextVertex;
+let compDx = 0;
+let compDy = 0;
+let compTargetX;
+let compTargetY;
+////////*END*initial conditions/////////////
+
+
+
+
 function eventListener (e) {
   if (initialClick === false) {
     clickX = Math.floor((e.pageX / 100)) * 100 + radius;
@@ -293,8 +341,8 @@ window.addEventListener('mousedown', e => {
   eventListener(e)
 })
 
-//////////////////////////////////////////////////////////////////*END*  EVENT LISTENER////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////*END*  EVENT LISTENER////////////////////////////////////////////////////////////////
 
 
 animate();
