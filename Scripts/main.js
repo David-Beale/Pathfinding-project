@@ -1,6 +1,7 @@
 const Graph = require('./Graph/graph');
 const Vertex = require('./Graph/vertex');
-const dijkstra = require('./Graph/dijkstra');
+const Player = require('./player-vehicle')
+const Computer = require('./computer-vehicle')
 
 const canvas = document.querySelector('canvas');
 
@@ -112,40 +113,8 @@ for (let i = 0; i < window.innerWidth; i += 100) {
 //////////////////////////////////////////////////////////////////*START*  ANIMATION////////////////////////////////////////////////////////////////
 
 
-
-const nextDirection = (currentVertex, nextVertex) => {
-  let currentX = currentVertex.x + radius;
-  let currentY = currentVertex.y + radius;
-  let newX = nextVertex.x + radius;
-  let newY = nextVertex.y + radius;
-  let changeX
-  let changeY
-
-  if (currentX - newX > 0) {
-    direction = 'Left'
-    changeX = -speed;
-    changeY = 0;
-  }
-  if (currentX - newX < 0) {
-    direction = 'Right'
-    changeX = speed;
-    changeY = 0;
-  }
-  if (currentY - newY > 0) {
-    direction = 'Up'
-    changeX = 0;
-    changeY = -speed;
-  }
-  if (currentY - newY < 0) {
-    direction = 'Down'
-    changeX = 0;
-    changeY = speed;
-  }
-  return [changeX, changeY, newX, newY];
-}
-
 function animate () {
-  const animation = requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
   c.clearRect(0, 0, innerWidth, innerHeight);
   drawMap(counter);
 
@@ -155,244 +124,25 @@ function animate () {
   if (counter > 220 && counter <= 240) map.graphObj[25].light = 'yellow'
 
   counter++;
-  for (let index = 1; index < arrayOfVertices.length; index++) {
-    // console.log(map.graphObj[index])
-    if (map.graphObj[index].occupied) {
-      drawYellowCircle(map.graphObj[index].x + radius, map.graphObj[index].y + radius, radius + 10)
-    }
-  }
-
-  // Circle will grow in size when first placed on map
-  if (initializing) {
-    if (initialRadius > radius) {
-      initialRadius = 0;
-      initializing = false;
-    }
-    drawCircle(clickX, clickY, initialRadius);
-    initialRadius += pulseSpeed;
-  }
-  // For subsequent renders, just draw a circle
-  if (initialClick && !initializing) {
-    drawCircle(x, y, radius);
-  }
-  // Clicking a destination will create a pulse circle
-  if (pulseCircle) {
-    if (initialRadius >= radius / 1.5) {
-      pulseSpeed = -pulseSpeed;
-    }
-    if (initialRadius < 0) {
-      initialRadius = 0;
-      pulseSpeed = 5;
-      pulseCircle = false;
-    }
-    if (pulseSpeed < 0) drawOutlineCircle(clickX, clickY, (radius / 1.5))
-    drawCircle(clickX, clickY, initialRadius);
-    initialRadius += pulseSpeed;
-  }
-
-  if (reachedDestination) {
-    dx = 0;
-    dy = 0;
-  }
-  if (requireNewPath) {
-
-    // let previousVertex;
-    // if(pathArray[i-1]) {
-    //   previousVertex = map.graphObj[pathArray[i-1]]
-    //   previousVertex.occupied = false;
-    // }
-    let currentVertexName = pathArray[i]
-    let currentVertex = map.graphObj[currentVertexName]
-    let nextVertexName = pathArray[i + 1];
-    let nextVertex = map.graphObj[nextVertexName]
-    let tempArray = nextDirection(currentVertex, nextVertex)
-    dx = tempArray[0]; dy = tempArray[1]; targetX = tempArray[2]; targetY = tempArray[3];
-    if (!nextVertex.occupied) {
-      if (currentVertex.light !== 'red' || direction !== 'Left') {
-        requireNewPath = false;
-        currentVertex.occupied = false;
-        nextVertex.occupied = true;
-      } else {
-        dx = dy = 0;
-      }
-    } else dx = dy = 0;
-
-  }
-  if (!reachedDestination) {
-    x += dx;
-    y += dy;
-    if (x === targetX && y === targetY) {
-      requireNewPath = true;
-      i++;
-    }
-    if (x === finalX && y === finalY) {
-      requireNewPath = false;
-      reachedDestination = true;
-    }
-  }
-
-  if (computerInit) {
-    computerX = computerCurrentVertex.x + radius;
-    computerY = computerCurrentVertex.y + radius;
-    computerInit = false;
-  }
-  if (computerRequireNewPath) {
-    //GET POSSIBLE DESTINATIONS//
-    possibleDestinations = computerCurrentVertex.getEdges();
-    while (computerRequireNewPath) {
-
-      //IF IT IS A DEAD END, CAR IS ALLOWED TO GO BACKWARDS//
-      if (possibleDestinations.length <= 1) {
-        computerNextVertex = computerPrevVertex;
-        computerRequireNewPath = false;
-        computerCurrentVertex.occupied = false;
-        computerNextVertex.occupied = true;
-      }
-      //OTHERWISE BACKWARDS DIRECTION IS NOT ALLOWED. RANDOM DIRECTION FROM REMAINING OPTIONS SLECTED//
-      else {
-        possibleDestinations = possibleDestinations.filter(destination => destination !== computerPrevVertex.value)
-        let rand = Math.floor(Math.random() * possibleDestinations.length)
-        computerNextVertex = map.graphObj[possibleDestinations[rand]];
-        if (computerNextVertex.occupied) {
-          possibleDestinations.splice(rand, 1);
-        }
-        else {
-          computerRequireNewPath = false;
-          computerCurrentVertex.occupied = false;
-          computerNextVertex.occupied = true;
-        }
-      }
-    }
-
-    //GET DIRECTIONS BASED ON NEXT DESTINATION
-    let tempArray = nextDirection(computerCurrentVertex, computerNextVertex)
-    compDx = tempArray[0]; compDy = tempArray[1]; compTargetX = tempArray[2]; compTargetY = tempArray[3];
-
-    computerPrevVertex = computerCurrentVertex;
-    computerCurrentVertex = computerNextVertex;
-  }
-  computerX += compDx;
-  computerY += compDy;
-  if (computerX === compTargetX && computerY === compTargetY) {
-    computerRequireNewPath = true;
-  }
-  drawRedCircle(computerX, computerY, radius)
+  // /////////collision zone visualiser
+  // const arrayOfVertices = Object.keys(map.graphObj);
+  // for (let index = 1; index < arrayOfVertices.length; index++) {
+  //   if (map.graphObj[index].occupied) {
+  //     drawYellowCircle(map.graphObj[index].x + radius, map.graphObj[index].y + radius, radius + 10)
+  //   }
+  // }
+  player.run(drawCircle, drawOutlineCircle);
+  computer.run(drawRedCircle);
+ 
 }
 
 //////////////////////////////////////////////////////////////////*END*  ANIMATION////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////*START*  EVENT LISTENER////////////////////////////////////////////////////////////////
-////////*START*initial conditions/////////////
-
-let pulseSpeed = 5;
-let speed = 5;
-const radius = 50;
-let initialRadius = 0;
-let dx;
-let dy;
-let i = 0;
-
-let requireNewPath = false;
-let reachedDestination = true;
-let direction;
-let targetX;
-let targetY;
-let start;
-let end;
-let pathArray;
-let x;
-let y;
-let finalX;
-let finalY;
-const arrayOfVertices = Object.keys(map.graphObj)
-let initialVertex
-let initializing = false;
-let initialClick = false;
-let secondClick = false;
-let pulseCircle = false;
-let clickX;
-let clickY;
-let computerInit = true;
-// let computerStartVertex = map.graphObj[Math.floor((Math.random() * arrayOfVertices.length))]
-let computerCurrentVertex = map.graphObj[1]
-let computerRequireNewPath = true;
-let computerPrevVertex = false;
-let computerNextVertex;
-let compDx = 0;
-let compDy = 0;
-let compTargetX;
-let compTargetY;
-////////*END*initial conditions/////////////
 
 
-
-
-function eventListener (e) {
-  if (initialClick === false) {
-    clickX = Math.floor((e.pageX / 100)) * 100 + radius;
-    clickY = Math.floor((e.pageY / 100)) * 100 + radius;
-    for (let i = 0; i < arrayOfVertices.length; i++) {
-      if (map.graphObj[arrayOfVertices[i]].x === clickX - radius && map.graphObj[arrayOfVertices[i]].y === clickY - radius) {
-        console.log(arrayOfVertices[i])
-        initializing = true;
-        initialVertex = map.graphObj[arrayOfVertices[i]]
-        initialVertex.occupied = true;
-        start = arrayOfVertices[i]
-        x = clickX;
-        y = clickY;
-        i = arrayOfVertices.length
-        initialClick = true;
-      }
-    }
-  }
-  else if (initialClick === true && secondClick === false) {
-    clickX = Math.floor((e.pageX / 100)) * 100 + radius;
-    clickY = Math.floor((e.pageY / 100)) * 100 + radius;
-    for (let i = 0; i < arrayOfVertices.length; i++) {
-      if (map.graphObj[arrayOfVertices[i]].x === clickX - radius && map.graphObj[arrayOfVertices[i]].y === clickY - radius) {
-        end = arrayOfVertices[i]
-        finalX = clickX;
-        finalY = clickY;
-        pathArray = dijkstra(map.graphObj, start, end)[1];
-        requireNewPath = true;
-        reachedDestination = false;
-        secondClick = true;
-        pulseCircle = true;
-        i = arrayOfVertices.length //end for loop
-      }
-    }
-
-
-  }
-  else if (initialClick === true && secondClick === true) {
-    if (reachedDestination) {
-      start = end;
-      x = clickX;
-      y = clickY;
-      i = 0;
-      clickX = Math.floor((e.pageX / 100)) * 100 + radius;
-      clickY = Math.floor((e.pageY / 100)) * 100 + radius;
-      for (let i = 0; i < arrayOfVertices.length; i++) {
-        if (map.graphObj[arrayOfVertices[i]].x === clickX - radius && map.graphObj[arrayOfVertices[i]].y === clickY - radius) {
-          end = arrayOfVertices[i]
-          finalX = clickX;
-          finalY = clickY;
-          requireNewPath = true;
-          reachedDestination = false;
-          pathArray = dijkstra(map.graphObj, start, end)[1];
-          pulseCircle = true;
-          i = arrayOfVertices.length
-        }
-      }
-    }
-  }
-}
-window.addEventListener('mousedown', e => {
-  eventListener(e)
-})
-
-
-//////////////////////////////////////////////////////////////////*END*  EVENT LISTENER////////////////////////////////////////////////////////////////
-
-
+const player = new Player('Player', map);
+const computer = new Computer('Computer', map)
 animate();
+window.addEventListener('mousedown', e => {
+  player.click(e)
+})
