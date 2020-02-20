@@ -70,35 +70,3 @@ class MinHeap {
   }
 }
 module.exports = MinHeap;
-// let asd = new MinHeap();
-// asd.add([42,'A']);
-// console.log(asd.retrieveMin());
-// console.log(asd.heapList);
-
-// let heap = new MinHeap();
-// heap.add([42,'A']);
-// console.log(heap.retrieveMin());
-// console.log(heap.heapList);
-// // console.log( ['A',44] > ['Z',41]);
-// heap.add([42,'A']);
-// heap.add([10,'B']);
-// heap.add([5,'B']);
-// heap.add([2,'B']);
-// heap.add([41,'B']);
-// heap.add([55,'B']);
-
-// heap.add(25);
-// heap.add(99);
-// heap.add(16);
-// heap.add(2);
-// heap.add(67);
-
-// console.log(heap.retrieveMin());
-// console.log(heap.retrieveMin());
-// console.log(heap.retrieveMin());
-// console.log(heap.retrieveMin());
-// console.log(heap.retrieveMin());
-// console.log(heap.retrieveMin());
-// console.log(heap.retrieveMin());
-// console.log(heap.retrieveMin());
-// console.log(heap.heapList);

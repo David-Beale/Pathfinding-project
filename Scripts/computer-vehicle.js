@@ -1,12 +1,12 @@
 module.exports = class Computer {
   constructor(value, map) {
     this.value = value;
-    this.radius = 50;
+    this.radius = 25;
     this.speed = 5;
     this.arrayOfVertices = Object.keys(map.graphObj);
-    this.currentVertex = map.graphObj[Math.floor((Math.random() * this.arrayOfVertices.length))] //map.graphObj[1]; //
+    let randomVertex = this.arrayOfVertices[Math.floor(Math.random() * this.arrayOfVertices.length)]
+    this.currentVertex = map.graphObj[randomVertex] //map.graphObj[1]; //
     this.nextVertex = null;
-    this.prevVertex = false;
     this.targetX = null
     this.targetY = null
     this.currentX = this.currentVertex.x + this.radius;
@@ -65,34 +65,30 @@ module.exports = class Computer {
 
   findNewPath () {
     this.possibleDestinations = this.currentVertex.getEdges();
-    while (this.requireNewPath) {
-      //IF IT IS A DEAD END, CAR IS ALLOWED TO GO BACKWARDS//
-      if (this.possibleDestinations.length <= 1) {
-        this.nextVertex = this.prevVertex;
+
+    if (this.possibleDestinations.length < 1) {
+      this.dx = 0;
+      this.dy = 0;
+    }
+    else {
+      let rand = Math.floor(Math.random() * this.possibleDestinations.length)
+      this.nextVertex = this.map.graphObj[this.possibleDestinations[rand]];
+      if (this.nextVertex.occupied) {
+        this.dx = 0;
+        this.dy = 0;
+      }
+      else {
         this.requireNewPath = false;
         this.currentVertex.occupied = false;
         this.nextVertex.occupied = true;
-      }
-      //OTHERWISE BACKWARDS DIRECTION IS NOT ALLOWED. RANDOM DIRECTION FROM REMAINING OPTIONS SLECTED//
-      else {
-        this.possibleDestinations = this.possibleDestinations.filter(destination => destination !== this.prevVertex.value)
-        let rand = Math.floor(Math.random() * this.possibleDestinations.length)
-        this.nextVertex = this.map.graphObj[this.possibleDestinations[rand]];
-        if (this.nextVertex.occupied) {
-          this.possibleDestinations.splice(rand, 1);
-        }
-        else {
-          this.requireNewPath = false;
-          this.currentVertex.occupied = false;
-          this.nextVertex.occupied = true;
-        }
+        this.nextDirection()
+        this.currentVertex = this.nextVertex;
       }
     }
     //GET DIRECTIONS TO NEXT DESTINATION
-    this.nextDirection()
+    
 
-    this.prevVertex = this.currentVertex;
-    this.currentVertex = this.nextVertex;
+    
 
   }
 

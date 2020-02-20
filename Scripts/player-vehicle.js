@@ -3,7 +3,7 @@ const dijkstra = require('./Graph/dijkstra');
 module.exports = class Player {
   constructor(value, map) {
     this.value = value;
-    this.radius = 50;
+    this.radius = 25;
     this.speed = 5;
     this.currentVertex = null;
     this.nextVertex = null;
@@ -33,8 +33,8 @@ module.exports = class Player {
     this.secondClicked = false;
   }
   click (e) {
-    this.clickX = Math.floor((e.pageX / 100)) * 100 + this.radius;
-    this.clickY = Math.floor((e.pageY / 100)) * 100 + this.radius;
+    this.clickX = Math.floor((e.pageX / 50)) * 50 + this.radius;
+    this.clickY = Math.floor((e.pageY / 50)) * 50 + this.radius;
     if (!this.init && !this.ready) {
       this.firstClick()
     } else if (this.ready) {
