@@ -133,7 +133,7 @@ module.exports = class Player {
     this.currentVertex = this.map.graphObj[this.pathArray[this.index]]
     this.nextVertex = this.map.graphObj[this.pathArray[this.index + 1]]
     this.nextDirection();
-    if (!this.nextVertex.occupied && (this.currentVertex.light !== 'red' || this.direction !== 'Left')) {
+    if (!this.nextVertex.occupied && (this.currentVertex.light === 'green')) {
       this.requireNewPath = false;
       this.currentVertex.occupied = false;
       this.nextVertex.occupied = true;

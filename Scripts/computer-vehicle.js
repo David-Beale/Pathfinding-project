@@ -73,7 +73,7 @@ module.exports = class Computer {
     else {
       let rand = Math.floor(Math.random() * this.possibleDestinations.length)
       this.nextVertex = this.map.graphObj[this.possibleDestinations[rand]];
-      if (this.nextVertex.occupied) {
+      if (this.nextVertex.occupied || (this.currentVertex.light !== 'green')) {
         this.dx = 0;
         this.dy = 0;
       }

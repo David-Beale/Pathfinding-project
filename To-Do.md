@@ -1,6 +1,6 @@
--2 way streets
--multiple computer objects
+-traffic lights
 -car images
 -rotating car
 -curved corners
 -time-based pathfinding
+-path finding line

@@ -30,8 +30,8 @@ const drawMap = () => {
     }
   }
 }
+let mapOfVertices = []
 const setUpGraph = () => {
-  let mapOfVertices = []
   //load vertices
   for (let i = 0; i < arrayOfTiles.length; i++) {
     mapOfVertices.push([])
@@ -152,4 +152,4 @@ const setUpEdges = (vertices,x,y,type, mapOfVertices) => {
   }
 
 }
-module.exports = {drawMap, setUpGraph, map}
+module.exports = {drawMap, setUpGraph, map, mapOfVertices}

@@ -1,6 +1,7 @@
 const Player = require('./player-vehicle')
 const Computer = require('./computer-vehicle')
 const {drawMap, setUpGraph, map} = require('./map')
+const drawLights = require('./traffic-lights')
 
 const canvas = document.querySelector('canvas');
 
@@ -8,26 +9,6 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const c = canvas.getContext('2d');
-
-const drawTrafficLightBottom = (x, y, color) => {
-  c.fillStyle = 'rgb(55, 54, 58)'
-  c.fillRect(x + 10, y + 78, 20, 20)
-  c.beginPath();
-  c.arc(x + 20, y + 88, 5, 0, Math.PI * 2, false);
-  c.fillStyle = color
-  c.strokeStyle = color;
-  c.stroke();
-  c.fill()
-}
-let counter = 0;
-// const drawMap = () => {
-//   drawTrafficLightBottom(700, 200, 'red');
-//   if (counter >= 0 && counter <= 100) drawTrafficLightBottom(700, 200, 'red');
-//   if (counter > 100 && counter <= 120) drawTrafficLightBottom(700, 200, 'yellow');
-//   if (counter > 120 && counter <= 220) drawTrafficLightBottom(700, 200, 'green');
-//   if (counter > 220 && counter <= 240) drawTrafficLightBottom(700, 200, 'yellow');
-//   if (counter === 240) counter = 0;
-// }
 
 const drawCircle = (x, y, radius) => {
   c.beginPath();
@@ -65,7 +46,9 @@ const drawOutlineCircle = (x, y, radius) => {
 //////////////////////////////////////////////////////////////////*START*  SET UP GRAPH////////////////////////////////////////////////////////////////
 drawMap();
 setUpGraph();
-
+drawLights();
+let counter = 0;
+const limit = 400;
 
 //////////////////////////////////////////////////////////////////*END*  SET UP GRAPH////////////////////////////////////////////////////////////////
 
@@ -76,12 +59,10 @@ function animate () {
   requestAnimationFrame(animate);
   c.clearRect(0, 0, innerWidth, innerHeight);
   drawMap();
+  drawLights(counter,map);
+  counter ++;
+  if(counter === limit ) counter = 0;
 
-  // if (counter >= 0 && counter <= 100) map.graphObj[25].light = 'red'
-  // if (counter > 100 && counter <= 120) map.graphObj[25].light = 'yellow'
-  // if (counter > 120 && counter <= 220) map.graphObj[25].light = 'green'
-  // if (counter > 220 && counter <= 240) map.graphObj[25].light = 'yellow'
-  // counter++;
 
   // /////////collision zone visualiser
   // const arrayOfVertices = Object.keys(map.graphObj);
@@ -91,8 +72,9 @@ function animate () {
   //   }
   // }
   player.run(drawCircle, drawOutlineCircle);
-  computer.run(drawRedCircle);
-
+  for (let i = 0; i < computerArray.length; i++) {
+    computerArray[i].run(drawRedCircle)    
+  }
 }
 
 //////////////////////////////////////////////////////////////////*END*  ANIMATION////////////////////////////////////////////////////////////////
@@ -100,7 +82,12 @@ function animate () {
 
 
 const player = new Player('Player', map);
-const computer = new Computer('Computer', map)
+const numberOfComputers = 30;
+const computerArray = []
+for (let i = 0; i < numberOfComputers; i++) {
+  let computer = new Computer('Computer'+i, map)
+  computerArray.push(computer)
+}
 animate();
 window.addEventListener('mousedown', e => {
   player.click(e)
