@@ -1,11 +1,13 @@
+const { drawRedCircle, drawCar } = require('./tiles.js')
+
 module.exports = class Computer {
-  constructor(value, map) {
+  constructor(value, map, vertex) {
     this.value = value;
     this.radius = 25;
     this.speed = 5;
-    this.arrayOfVertices = Object.keys(map.graphObj);
-    let randomVertex = this.arrayOfVertices[Math.floor(Math.random() * this.arrayOfVertices.length)]
-    this.currentVertex = map.graphObj[randomVertex] //map.graphObj[1]; //
+    // this.arrayOfVertices = Object.keys(map.graphObj);
+    // let randomVertex = this.arrayOfVertices[Math.floor(Math.random() * this.arrayOfVertices.length)]
+    this.currentVertex = map.graphObj[vertex] //map.graphObj[1]; //
     this.nextVertex = null;
     this.targetX = null
     this.targetY = null
@@ -20,11 +22,16 @@ module.exports = class Computer {
     this.finalY = null;
     this.map = map;
     this.possibleDestinations = [];
+    this.computerCar = new Image();
+    this.possibleCars = ["./Assets/green.png","./Assets/orange.png", "./Assets/red.png", "./Assets/yellow.png", "./Assets/blue.png"]
+    const rand = Math.floor(Math.random()*this.possibleCars.length)
+    this.computerCar.src = this.possibleCars[rand];
   }
 
 
-  run (drawRedCircle) {
-    drawRedCircle(this.currentX, this.currentY, this.radius)
+  run () {
+    // drawRedCircle(this.currentX, this.currentY, this.radius)
+    drawCar(this.currentX - this.radius, this.currentY - this.radius / 2, this.direction, this.computerCar)
     if (this.requireNewPath) {
       this.findNewPath();
     }
@@ -42,22 +49,22 @@ module.exports = class Computer {
     this.targetY = this.nextVertex.y + this.radius;
 
     if (this.currentX - this.targetX > 0) {
-      this.direction = 'Left'
+      this.direction = 0;
       this.dx = -this.speed;
       this.dy = 0;
     }
     if (this.currentX - this.targetX < 0) {
-      this.direction = 'Right'
+      this.direction = 180;
       this.dx = this.speed;
       this.dy = 0;
     }
     if (this.currentY - this.targetY > 0) {
-      this.direction = 'Up'
+      this.direction = 90;
       this.dx = 0;
       this.dy = -this.speed;
     }
     if (this.currentY - this.targetY < 0) {
-      this.direction = 'Down'
+      this.direction = 270;
       this.dx = 0;
       this.dy = this.speed;
     }

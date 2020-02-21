@@ -1,4 +1,4 @@
--traffic lights
+
 -car images
 -rotating car
 -curved corners

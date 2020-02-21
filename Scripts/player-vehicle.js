@@ -1,4 +1,5 @@
 const dijkstra = require('./Graph/dijkstra');
+const { drawCar, drawOutlineCircle, drawCircle } = require('./tiles.js')
 
 module.exports = class Player {
   constructor(value, map) {
@@ -31,6 +32,8 @@ module.exports = class Player {
     this.map = map;
     this.arrayOfVertices = Object.keys(map.graphObj);
     this.secondClicked = false;
+    this.playerCar = new Image();
+    this.playerCar.src = "./Assets/player.png";
   }
   click (e) {
     this.clickX = Math.floor((e.pageX / 50)) * 50 + this.radius;
@@ -42,15 +45,15 @@ module.exports = class Player {
     }
   }
 
-  run (drawCircle, drawOutlineCircle) {
+  run () {
     if (this.init) {
-      this.drawNew(drawCircle);
+      this.drawNew();
     }
     if (this.ready) {
-      this.draw(drawCircle);
+      this.drawPlayerCar()
     }
     if (this.pulseCircle) {
-      this.doPulseCircle(drawCircle, drawOutlineCircle);
+      this.doPulseCircle();
     }
     if (this.ready && this.reachedDestination && this.secondClicked) {
       this.start = this.end;
@@ -75,7 +78,7 @@ module.exports = class Player {
     }
   }
 
-  drawNew (drawCircle) {
+  drawNew () {
     if (this.initialRadius > this.radius) {
       this.init = false;
       this.ready = true;
@@ -84,10 +87,13 @@ module.exports = class Player {
     drawCircle(this.currentX, this.currentY, this.initialRadius);
     this.initialRadius += this.pulseSpeed;
   }
-  draw (drawCircle) {
+  draw () {
     drawCircle(this.currentX, this.currentY, this.radius)
   }
-  doPulseCircle (drawCircle, drawOutlineCircle) {
+  drawPlayerCar () {
+    drawCar(this.currentX - this.radius, this.currentY - this.radius / 2, this.direction, this.playerCar)
+  }
+  doPulseCircle () {
     if (this.initialRadius >= this.radius / 1.5) {
       this.pulseSpeed = -this.pulseSpeed;
     }
@@ -108,22 +114,22 @@ module.exports = class Player {
     this.targetY = this.nextVertex.y + this.radius;
 
     if (this.currentX - this.targetX > 0) {
-      this.direction = 'Left'
+      this.direction = 0;
       this.dx = -this.speed;
       this.dy = 0;
     }
     if (this.currentX - this.targetX < 0) {
-      this.direction = 'Right'
+      this.direction = 180;
       this.dx = this.speed;
       this.dy = 0;
     }
     if (this.currentY - this.targetY > 0) {
-      this.direction = 'Up'
+      this.direction = 90;
       this.dx = 0;
       this.dy = -this.speed;
     }
     if (this.currentY - this.targetY < 0) {
-      this.direction = 'Down'
+      this.direction = 270;
       this.dx = 0;
       this.dy = this.speed;
     }

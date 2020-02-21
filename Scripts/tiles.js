@@ -7,6 +7,44 @@ const c = canvas.getContext('2d');
 
 
 const tiles = {
+  drawCar: function (x, y, degrees, car) {
+    c.save();
+    c.translate(x + 25, y + 12.5);
+    c.rotate(degrees * Math.PI / 180);
+    c.drawImage(car, -25, -12.5, 50, 25);
+    c.restore();
+  },
+
+  drawOutlineCircle: function (x, y, radius) {
+    c.beginPath();
+    c.arc(x, y, radius, 0, Math.PI * 2, false);
+    c.strokeStyle = 'white';
+    c.stroke();
+  },
+  drawCircle: function (x, y, radius) {
+    c.beginPath();
+    c.arc(x, y, radius, 0, Math.PI * 2, false);
+    c.fillStyle = 'white'
+    c.strokeStyle = 'white';
+    c.stroke();
+    c.fill()
+  },
+  drawRedCircle: function (x, y, radius) {
+    c.beginPath();
+    c.arc(x, y, radius, 0, Math.PI * 2, false);
+    c.fillStyle = 'red'
+    c.strokeStyle = 'red';
+    c.stroke();
+    c.fill()
+  },
+  drawYellowCircle: function (x, y, radius) {
+    c.beginPath();
+    c.arc(x, y, radius, 0, Math.PI * 2, false);
+    c.fillStyle = 'rgba(191, 191, 63, 0.35)'
+    c.strokeStyle = 'red';
+    c.stroke();
+    c.fill()
+  },
   XR: function (x, y) {
     c.fillStyle = 'rgb(55, 55, 55)';
     c.fillRect(x, y, 100, 100);
@@ -255,7 +293,7 @@ const tiles = {
     c.lineTo(x + 50, y + 45);
     c.stroke();
   },
-  drawOneLight: function (x, y, counter,offset) {
+  drawOneLight: function (x, y, counter, offset) {
     let color;
     let value = counter + offset;
     if (value <= 180) color = 'red';
