@@ -81,6 +81,8 @@ const setUpEdges = (vertices,x,y,type, mapOfVertices) => {
     map.addEdge(tileDownVertices[0], vertices[2]);
   }
   if(type === TLC) {
+    vertices[0].corner = 'TLCOuter'
+    vertices[3].corner = 'TLCInner'
     map.addEdge(vertices[2],vertices[0]);
     map.addEdge(vertices[0],vertices[1]);
     const tileDownVertices = mapOfVertices[y+1][x];
@@ -91,6 +93,8 @@ const setUpEdges = (vertices,x,y,type, mapOfVertices) => {
     map.addEdge(tileRightVertices[2], vertices[3]);
   }
   if(type === TRC) {
+    vertices[1].corner = 'TRCOuter'
+    vertices[2].corner = 'TRCInner'
     map.addEdge(vertices[0],vertices[1]);
     map.addEdge(vertices[1],vertices[3]);
     const tileDownVertices = mapOfVertices[y+1][x];
@@ -98,6 +102,8 @@ const setUpEdges = (vertices,x,y,type, mapOfVertices) => {
     map.addEdge(tileDownVertices[0], vertices[2]);
   }
   if(type === BLC) {
+    vertices[2].corner = 'BLCOuter'
+    vertices[1].corner = 'BLCInner'
     map.addEdge(vertices[3],vertices[2]);
     map.addEdge(vertices[2],vertices[0]);
     const tileRightVertices = mapOfVertices[y][x+1];
@@ -105,6 +111,8 @@ const setUpEdges = (vertices,x,y,type, mapOfVertices) => {
     map.addEdge(tileRightVertices[2], vertices[3]);
   }
   if(type === BRC) {
+    vertices[3].corner = 'BRCOuter'
+    vertices[0].corner = 'BRCInner'
     map.addEdge(vertices[1],vertices[3]);
     map.addEdge(vertices[3],vertices[2]);
   }
