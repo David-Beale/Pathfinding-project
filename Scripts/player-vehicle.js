@@ -1,5 +1,5 @@
 const dijkstra = require('./Graph/dijkstra');
-const { drawCar, drawOutlineCircle, drawCircle } = require('./tiles.js')
+const { drawCar, drawOutlineCircle, drawCircle, drawLine } = require('./tiles.js')
 
 module.exports = class Player {
   constructor(value, map) {
@@ -52,9 +52,7 @@ module.exports = class Player {
     if (this.init) {
       this.drawNew();
     }
-    if (this.ready) {
-      this.drawPlayerCar()
-    }
+
     if (this.pulseCircle) {
       this.doPulseCircle();
     }
@@ -73,6 +71,7 @@ module.exports = class Player {
       this.findNewPath();
     }
     if (!this.reachedDestination) {
+      this.drawPath();
       this.currentX += this.dx;
       this.currentY += this.dy;
       if (this.currentX === this.targetX && this.currentY === this.targetY) {
@@ -83,6 +82,9 @@ module.exports = class Player {
         this.requireNewPath = false;
         this.reachedDestination = true;
       }
+    }
+    if (this.ready) {
+      this.drawPlayerCar()
     }
   }
 
@@ -406,5 +408,23 @@ module.exports = class Player {
     }
     if (status > 2 * this.step) this.exitCornerCheck = false;
     else this.counter++;
+  }
+  drawPath () {
+    for (let i = this.index; i < this.pathArray.length-1; i++) {
+      let thisX
+      let thisY
+      if (i === this.index) {
+        thisX = this.currentX
+        thisY = this.currentY
+      } else {
+        const thisVertex = this.map.graphObj[this.pathArray[i]]
+        thisX = thisVertex.x + this.radius
+        thisY = thisVertex.y+this.radius
+      }
+      const nextVertex = this.map.graphObj[this.pathArray[i + 1]]
+      const nextX = nextVertex.x+this.radius
+      const nextY =  nextVertex.y+this.radius
+      drawLine(thisX, thisY, nextX, nextY)
+    }
   }
 }

@@ -45,6 +45,16 @@ const tiles = {
     c.stroke();
     c.fill()
   },
+  drawLine: function (x, y, targetx, targety) {
+    c.beginPath();
+    c.fillStyle = 'rgb(58, 94, 211)';
+    let dx = targetx-x;
+    let dy = targety-y 
+    if(dx===0) {
+      c.fillRect(x-2.5, y, 5, dy*1.05);
+    } else c.fillRect(x, y-2.5, dx*1.05, 5);
+
+  },
   XR: function (x, y) {
     c.fillStyle = 'rgb(55, 55, 55)';
     c.fillRect(x, y, 100, 100);

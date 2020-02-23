@@ -1,6 +1,6 @@
 
 -in transit destination change
--curved corners
+-curved turning
 -time-based pathfinding
 -path finding line
 -search function

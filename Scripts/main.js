@@ -48,9 +48,9 @@ function animate () {
   // }
 
   player.run();
-  // for (let i = 0; i < computerArray.length; i++) {
-  //   computerArray[i].run()
-  // }
+  for (let i = 0; i < computerArray.length; i++) {
+    computerArray[i].run()
+  }
 }
 
 //////////////////////////////////////////////////////////////////*END*  ANIMATION////////////////////////////////////////////////////////////////
