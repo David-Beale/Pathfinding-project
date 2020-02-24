@@ -2,7 +2,7 @@ const Player = require('./player-vehicle')
 const Computer = require('./computer-vehicle')
 const { drawMap, setUpGraph, map } = require('./map')
 const drawLights = require('./traffic-lights')
-const { drawYellowCircle } = require('./tiles.js')
+const { drawYellowCircle, drawTraffic } = require('./tiles.js')
 
 const canvas = document.querySelector('canvas');
 
@@ -47,6 +47,16 @@ function animate () {
   //   }
   // }
 
+    // /////////traffic visualiser
+  const arrayOfVertices = Object.keys(map.graphObj);
+  for (let index = 0; index < arrayOfVertices.length; index++) {
+   
+    const vertex = map.graphObj[arrayOfVertices[index]]
+    vertex.occupiedCheck();
+    drawTraffic(vertex.x, vertex.y, vertex.getAverageTime())
+  }
+
+
   player.run();
   for (let i = 0; i < computerArray.length; i++) {
     computerArray[i].run()
@@ -58,7 +68,7 @@ function animate () {
 
 
 const player = new Player('Player', map);
-const numberOfComputers = 30;
+const numberOfComputers = 100;
 const computerArray = []
 const usedVertices = []
 const arrayOfVertices = Object.keys(map.graphObj);

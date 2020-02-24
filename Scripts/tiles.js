@@ -14,7 +14,15 @@ const tiles = {
     c.drawImage(car, -25, -12.5, 50, 25);
     c.restore();
   },
-
+  drawTraffic: function (x,y, average) {
+    if (average===0) color = 'rgba(70, 240, 36, 0)'
+    else if (average<=15) color = 'rgba(70, 240, 36, 0.1)'
+    else if (average <=25) color = 'rgba(226, 240, 36, 0.3)' 
+    else color = 'rgba(240, 36, 36, 0.3)'
+    c.beginPath();
+    c.fillStyle = color;
+    c.fillRect(x, y, 50, 50);
+  },
   drawOutlineCircle: function (x, y, radius) {
     c.beginPath();
     c.arc(x, y, radius, 0, Math.PI * 2, false);

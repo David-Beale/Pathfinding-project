@@ -1,4 +1,5 @@
 const dijkstra = require('./Graph/dijkstra');
+const dijkstraTime = require('./Graph/dijkstra-time');
 const { drawCar, drawOutlineCircle, drawCircle, drawLine } = require('./tiles.js')
 
 module.exports = class Player {
@@ -163,7 +164,7 @@ module.exports = class Player {
 
       if (!this.nextVertex.occupied && (this.currentVertex.light === 'green')) {
         this.requireNewPath = false;
-        this.currentVertex.occupied = false;
+        this.currentVertex.occupiedFalse();
         this.nextVertex.occupied = true;
       } else this.dx = this.dy = 0;
 
@@ -190,7 +191,13 @@ module.exports = class Player {
           this.finalX = this.clickX;
           this.finalY = this.clickY;
           this.secondClicked = true;
-          this.pathArray = dijkstra(this.map.graphObj, this.start, this.end)[1];
+          const dijkstraResult = dijkstra(this.map.graphObj, this.start, this.end)
+          this.pathArray = dijkstraResult[1];
+          const distance = dijkstraResult[0]
+          const time = (this.getTimeandDistance()/60)
+          const dijkstraTiming = dijkstraTime(this.map.graphObj, this.start, this.end)[0]
+          console.log('Normal pathfinding time:',time, 'Time based:', dijkstraTiming/60)
+          console.log('Estimated time:',Math.round(time * 100) / 100,'Distance:',Math.round(distance * 100) / 100, 'Speed', distance/time);
           this.requireNewPath = true;
           this.reachedDestination = false;
           this.pulseCircle = true;
@@ -382,7 +389,7 @@ module.exports = class Player {
     const status = this.counter - (this.step);
     if (status > 0) {
       this.angle = this.angleOffset + (status * (45 / this.step))
-      this.direction = this.rotationSign*(this.angle + 90 - this.yrotationOffset) ;
+      this.direction = this.rotationSign * (this.angle + 90 - this.yrotationOffset);
       this.targetCornerX = Math.floor(this.xOffset + (this.nextVertex.x + 2 * this.radius) - (this.radius * Math.cos(Math.PI / 180 * (this.angle + this.xrotationOffset))))
       this.targetCornerY = Math.floor(this.yOffset + (this.nextVertex.y + 2 * this.radius) - (this.radius * Math.sin(Math.PI / 180 * (this.angle + this.yrotationOffset))))
       this.dx = this.targetCornerX - this.currentX
@@ -400,7 +407,7 @@ module.exports = class Player {
       this.currentCornerX = this.currentX
       this.currentCornerY = this.currentY
       this.angle = this.angleOffset + (90 - (this.step - status) * (45 / this.step))
-      this.direction = this.rotationSign*(this.angle + 90 - this.yrotationOffset) ;
+      this.direction = this.rotationSign * (this.angle + 90 - this.yrotationOffset);
       this.targetCornerX = Math.floor(this.xOffset + (this.currentVertex.x + 2 * this.radius) - (this.radius * Math.cos(Math.PI / 180 * (this.angle + this.xrotationOffset))))
       this.targetCornerY = Math.floor(this.yOffset + (this.currentVertex.y + 2 * this.radius) - (this.radius * Math.sin(Math.PI / 180 * (this.angle + this.yrotationOffset))))
       this.dx = this.targetCornerX - this.currentCornerX
@@ -410,7 +417,7 @@ module.exports = class Player {
     else this.counter++;
   }
   drawPath () {
-    for (let i = this.index; i < this.pathArray.length-1; i++) {
+    for (let i = this.index; i < this.pathArray.length - 1; i++) {
       let thisX
       let thisY
       if (i === this.index) {
@@ -419,12 +426,20 @@ module.exports = class Player {
       } else {
         const thisVertex = this.map.graphObj[this.pathArray[i]]
         thisX = thisVertex.x + this.radius
-        thisY = thisVertex.y+this.radius
+        thisY = thisVertex.y + this.radius
       }
       const nextVertex = this.map.graphObj[this.pathArray[i + 1]]
-      const nextX = nextVertex.x+this.radius
-      const nextY =  nextVertex.y+this.radius
+      const nextX = nextVertex.x + this.radius
+      const nextY = nextVertex.y + this.radius
       drawLine(thisX, thisY, nextX, nextY)
     }
+  }
+  getTimeandDistance () {
+    let time = 0;
+    for (let i = 1; i < this.pathArray.length; i++) {
+      const thisVertex = this.map.graphObj[this.pathArray[i]]
+      time += thisVertex.average;
+    }
+    return time;
   }
 }

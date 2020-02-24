@@ -86,7 +86,7 @@ module.exports = class Computer {
       }
       else {
         this.requireNewPath = false;
-        this.currentVertex.occupied = false;
+        this.currentVertex.occupiedFalse();
         this.nextVertex.occupied = true;
         this.nextDirection()
         this.currentVertex = this.nextVertex;
