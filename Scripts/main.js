@@ -112,18 +112,13 @@ $(() => {
     start = true;
   });
 
-  $("#lights-off").on('click', function () {
-    override = true;
+  $("#lights").on('click', function () {
+    override = !override;
   });
-  $("#lights-on").on('click', function () {
-    override = false;
+  $("#collision").on('click', function () {
+    collisionVis = !collisionVis;
   });
-  $("#collision-off").on('click', function () {
-    collisionVis = false;
-  });
-  $("#collision-on").on('click', function () {
-    collisionVis = true;
-  });
+ 
   $(function () {
     $("#speed-slider").slider({
       value: 5,

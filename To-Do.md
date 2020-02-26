@@ -1,9 +1,7 @@
 - scrollable map
 - get speed slider to work
-- in transit new destination bug
 - camera lock-on
 - toolbar toggle
-- in transit destination change
 - curved turning
 - path finding lines for both pathfinding methods
 - search function

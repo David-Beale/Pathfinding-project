@@ -62,6 +62,7 @@ module.exports = class Player {
     if (this.reachedDestination && this.setNewDestination) {
       this.savedDestination();
     }
+
     if (this.enterCornerCheck) {
       this.enterCorner();
     } else if (this.exitCornerCheck) {
@@ -79,6 +80,12 @@ module.exports = class Player {
       } else if (this.ready) {
         this.secondClick();
       }
+    }
+    //We need to find a new path before and after the click event just in case 
+    //the click occurs when the car requires a part. This would break the
+    //in transit repathing.
+    if (this.requireNewPath) {
+      this.findNewPath();
     }
     if (!this.reachedDestination) {
       if (!this.setNewDestination) {
@@ -199,7 +206,7 @@ module.exports = class Player {
   }
   savedDestination () {
     this.setNewDestination = false;
-    this.index=0;
+    this.index = 0;
     this.end = this.save.end
     this.finalX = this.save.finalX
     this.finalY = this.save.finalY;
