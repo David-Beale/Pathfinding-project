@@ -59,14 +59,18 @@ const tiles = {
     c.stroke();
     c.fill()
   },
-  drawLine: function (x, y, targetx, targety) {
+  drawLine: function (x, y, targetx, targety, color) {
     c.beginPath();
-    c.fillStyle = 'rgb(58, 94, 211)';
+    c.fillStyle = color;
+    let margin = 0;
+    if(color === 'yellow') {
+      margin = 1.5;
+    }
     let dx = targetx-x;
     let dy = targety-y 
     if(dx===0) {
-      c.fillRect(x-2.5, y, 5, dy*1.05);
-    } else c.fillRect(x, y-2.5, dx*1.05, 5);
+      c.fillRect(x-2.5, y, 5 + margin, dy*1.05);
+    } else c.fillRect(x, y-2.5, dx*1.05, 5+margin);
 
   },
   XR: function (x, y) {

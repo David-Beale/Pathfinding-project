@@ -84,10 +84,14 @@ module.exports = class Computer {
         this.dx = 0;
         this.dy = 0;
       }
+      // if(this.nextVertex.occupied && this.nextVertex.speed < this.speed){
+      //   this.speed = this.nextVertex.speed
+      // } 
       else {
         this.requireNewPath = false;
         this.currentVertex.occupiedFalse();
         this.nextVertex.occupied = true;
+        // this.nextVertex.speed = this.speed;
         this.nextDirection()
         this.currentVertex = this.nextVertex;
       }

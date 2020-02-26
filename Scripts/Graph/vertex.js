@@ -24,7 +24,7 @@ class Vertex {
     if (this.occupied === true) this.internalCounter++
 
   }
-  occupiedFalse () {
+  occupiedFalse (speed) {
     this.occupied = false;
     if(this.internalCounter>0) {
       this.averageArray.push(this.internalCounter)

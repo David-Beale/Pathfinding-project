@@ -14,6 +14,15 @@ const collisionZone = () => {
     }
   }
 }
+const trafficVisFunc = () => {
+  const arrayOfVertices = Object.keys(map.graphObj);
+  for (let index = 0; index < arrayOfVertices.length; index++) {
+
+    const vertex = map.graphObj[arrayOfVertices[index]]
+    vertex.occupiedCheck();
+    drawTraffic(vertex.x, vertex.y, vertex.getAverageTime())
+  }
+}
 
 $(() => {
 
@@ -42,19 +51,15 @@ $(() => {
 
 
       /////////collision zone visualiser
-      if(collisionVis){
+      if (collisionVis) {
         collisionZone()
       }
 
 
 
       // /////////traffic visualiser
-      const arrayOfVertices = Object.keys(map.graphObj);
-      for (let index = 0; index < arrayOfVertices.length; index++) {
-
-        const vertex = map.graphObj[arrayOfVertices[index]]
-        vertex.occupiedCheck();
-        drawTraffic(vertex.x, vertex.y, vertex.getAverageTime())
+      if (trafficVis) {
+        trafficVisFunc()
       }
 
 
@@ -70,7 +75,7 @@ $(() => {
 
 
 
-  const player = new Player('Player', map);
+  let player = new Player('Player', map);
   let numberOfComputers = 5;
   let computerArray;
   const usedVertices = []
@@ -98,18 +103,45 @@ $(() => {
   let start = true;
   let override = true;
   let collisionVis = false;
+  let trafficVis = false
+  let compareClick = false;
+  let compareClickCount = 0;
   generateComps(numberOfComputers)
   animate();
 
   $("canvas").on('click', function (e) {
-    player.click = true;
-    player.event = e;
+    if (!compareClick) {
+      player.click = true;
+      player.event = e;
+    }
+    else if (compareClick && !compareClickCount) {
+      $('#text').html('Select a destination')
+      compareClickCount = 1;
+    }
+    else if (compareClickCount === 1) {
+      $('#text').html('Select a method')
+      compareClick = false;
+      compareClickCount = 0;
+    }
   });
-  $("#stop").on('click', function () {
-    start = false;
+  $("button").on('click', function () {
+    $(this).toggleClass("selected")
+    if ($(this).attr('id') === 'distance' && $(this).hasClass("selected") &&
+      $('#time').hasClass("selected")) {
+      $('#time').toggleClass("selected")
+    }
+    else if ($(this).attr('id') === 'time' && $(this).hasClass("selected")  &&
+    $('#distance').hasClass("selected"))  {
+      $('#distance').toggleClass("selected")
+    } 
+    else if ($(this).attr('id') === 'compare' && $(this).hasClass("selected")) {
+      $('#distance').removeClass("selected")
+      $('#time').removeClass("selected")
+    }
   });
+
   $("#start").on('click', function () {
-    start = true;
+    start = !start;
   });
 
   $("#lights").on('click', function () {
@@ -118,15 +150,55 @@ $(() => {
   $("#collision").on('click', function () {
     collisionVis = !collisionVis;
   });
- 
+  $("#traffic").on('click', function () {
+    trafficVis = !trafficVis;
+  });
+  $("#distance").on('click', function () {
+    player.pathfinding = 'dijkstra';
+  });
+  $("#time").on('click', function () {
+    player.pathfinding = 'dijkstra-time';
+  });
+  $("#compare").on('click', function () {
+    $("#distance-info").toggleClass("hidden");
+    $("#text").toggleClass("hidden");
+    $("#time-info").toggleClass("hidden");
+
+    if (!$("#text").hasClass("hidden")) {
+      if (!player.nextVertex) {
+        player.currentVertex.occupiedFalse();
+      } else {
+        player.nextVertex.occupiedFalse();
+      }
+      player = new Player('Player', map);
+      $('#text').html('Select a start point')
+      compareClick = true;
+    } else {
+      compareClick = false;
+    }
+  });
+
   $(function () {
-    $("#speed-slider").slider({
+    $("#user-speed-slider").slider({
       value: 5,
       min: 1,
       max: 5,
       step: 4,
       slide: function (event, ui) {
         player.speed = ui.value;
+      }
+    });
+  });
+  $(function () {
+    $("#computer-speed-slider").slider({
+      value: 5,
+      min: 1,
+      max: 5,
+      step: 4,
+      slide: function (event, ui) {
+        for (let i = 0; i < numberOfComputers; i++) {
+          computerArray[i].speed = ui.value;
+        }
       }
     });
   });

@@ -41,6 +41,9 @@ module.exports = class Player {
     this.setNewDestination = false;
     this.click = false;
     this.event;
+    this.pathfinding = 'dijkstra'
+    this.dijkstraResult;
+    this.pathColor = 'rgb(58, 94, 211)'
   }
 
 
@@ -187,8 +190,22 @@ module.exports = class Player {
         this.requireNewPath = false;
         this.currentVertex.occupiedFalse();
         this.nextVertex.occupied = true;
+        // this.nextVertex.speed = this.speed;
       } else this.dx = this.dy = 0;
 
+      // if (this.nextVertex.occupied || (this.currentVertex.light !== 'green')) {
+      //   this.dx = 0;
+      //   this.dy = 0;
+      // }
+      // if(this.nextVertex.occupied && this.nextVertex.speed < this.speed){
+      //   this.speed = this.nextVertex.speed
+      // } 
+      // else {
+      //   this.requireNewPath = false;
+      //   this.currentVertex.occupiedFalse();
+      //   this.nextVertex.occupied = true;
+      //   this.nextVertex.speed = this.speed;
+      // }
     }
   }
   firstClick () {
@@ -211,9 +228,9 @@ module.exports = class Player {
     this.finalX = this.save.finalX
     this.finalY = this.save.finalY;
     this.pathArray = this.save.pathArray;
-    const distance = this.save.distance;
-    const time = (this.getTimeandDistance() / 60)
-    const dijkstraTiming = dijkstraTime(this.map.graphObj, this.start, this.end)[0]
+    // const distance = this.save.distance;
+    // const time = (this.getTimeandDistance() / 60)
+    // const dijkstraTiming = dijkstraTime(this.map.graphObj, this.start, this.end)[0]
     // console.log('Normal pathfinding time:', time, 'Time based:', dijkstraTiming / 60)
     // console.log('Estimated time:', Math.round(time * 100) / 100, 'Distance:', Math.round(distance * 100) / 100, 'Speed', distance / time);
     this.requireNewPath = true;
@@ -228,13 +245,20 @@ module.exports = class Player {
           this.end = this.nextVertex.value;
           this.setNewDestination = true;
           this.pulseCircle = true;
-          const dijkstraResult = dijkstra(this.map.graphObj, this.end, this.arrayOfVertices[i])
+          if(this.pathfinding === 'dijkstra'){
+            this.dijkstraResult = dijkstra(this.map.graphObj, this.end, this.arrayOfVertices[i])
+            this.pathColor = 'rgb(58, 94, 211)'
+          } else if (this.pathfinding === 'dijkstra-time') {
+            this.dijkstraResult = dijkstraTime(this.map.graphObj, this.end, this.arrayOfVertices[i])
+            this.pathColor = 'yellow'
+          }
+          
           this.save = {
             end: this.arrayOfVertices[i],
             finalX: this.clickX,
             finalY: this.clickY,
-            pathArray: dijkstraResult[1],
-            distance: dijkstraResult[0]
+            pathArray: this.dijkstraResult[1],
+            distance: this.dijkstraResult[0]
           }
         }
       }
@@ -246,11 +270,17 @@ module.exports = class Player {
           this.finalX = this.clickX;
           this.finalY = this.clickY;
           this.secondClicked = true;
-          const dijkstraResult = dijkstra(this.map.graphObj, this.start, this.end)
-          this.pathArray = dijkstraResult[1];
-          const distance = dijkstraResult[0]
-          const time = (this.getTimeandDistance() / 60)
-          const dijkstraTiming = dijkstraTime(this.map.graphObj, this.start, this.end)[0]
+          if(this.pathfinding === 'dijkstra'){
+            this.dijkstraResult = dijkstra(this.map.graphObj, this.start, this.end)
+            this.pathColor = 'rgb(58, 94, 211)'
+          } else if (this.pathfinding === 'dijkstra-time') {
+            this.dijkstraResult = dijkstraTime(this.map.graphObj, this.start, this.end)
+            this.pathColor = 'yellow'
+          }
+          this.pathArray = this.dijkstraResult[1];
+          // const distance = dijkstraResult[0]
+          // const time = (this.getTimeandDistance() / 60)
+          // const dijkstraTiming = dijkstraTime(this.map.graphObj, this.start, this.end)[0]
           // console.log('Normal pathfinding time:', time, 'Time based:', dijkstraTiming / 60)
           // console.log('Estimated time:', Math.round(time * 100) / 100, 'Distance:', Math.round(distance * 100) / 100, 'Speed', distance / time);
           this.requireNewPath = true;
@@ -485,7 +515,7 @@ module.exports = class Player {
       const nextVertex = this.map.graphObj[this.pathArray[i + 1]]
       const nextX = nextVertex.x + this.radius
       const nextY = nextVertex.y + this.radius
-      drawLine(thisX, thisY, nextX, nextY)
+      drawLine(thisX, thisY, nextX, nextY, this.pathColor)
     }
   }
   drawSavedPath () {
@@ -500,7 +530,7 @@ module.exports = class Player {
       const nextVertex = this.map.graphObj[this.save.pathArray[i + 1]]
       const nextX = nextVertex.x + this.radius
       const nextY = nextVertex.y + this.radius
-      drawLine(thisX, thisY, nextX, nextY)
+      drawLine(thisX, thisY, nextX, nextY, this.pathColor)
     }
   }
   getTimeandDistance () {

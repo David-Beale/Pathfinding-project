@@ -13,15 +13,34 @@
 <body>
   <canvas> </canvas>
   <div class="options-container">
-    <button id="start">Start</button>
-    <button id="stop">Stop</button>
-    <button id="lights">Toggle traffic lights</button>
-    <button id="collision">Toggle collission boxes</button>
-    <p class="label">Speed</p>
-    <div class="speed" id="speed-slider"></div>
+    <div class="sub-container">
+      <button class="start" id="start">Start/stop</button>
+    </div>
+    <div class="pathfinding-container">
+      <h2>Select pathfinding method</h2>
+      <div class="pathfinding-sub-container">
+        <button class="pathfinding-button selected" id="distance">Shortest distance</button>
+        <button class="pathfinding-button" id="compare">Compare</button>
+        <button class="pathfinding-button" id="time">Fastest time</button>
+        <div class="distance hidden" id="distance-info"></div>
+        <div class="text hidden" id="text">Select a start point</div>
+        <div class="time hidden" id="time-info"></div>
+      </div>
+    </div>
+    <div class="sub-container">
+      <button class="container-button" id="lights">Toggle traffic lights</button>
+      <button class="container-button" id="collision">Toggle collission boxes</button>
+    </div>
+    <button id="traffic">Toggle traffic visuals</button>
+    <div class="speed-container">
+      <p class="label">User speed</p>
+      <div class="speed" id="user-speed-slider"></div>
+      <p class="label">Computer speed</p>
+      <div class="speed" id="computer-speed-slider"></div>
+    </div>
     <form class="num-comps" id="num-comps">
       <label class="label" for="num-comps">Enter number of computer cars</label>
-      <input id="num-comps-val" type="text" value="5">
+      <input autocomplete="off" id="num-comps-val" type="text" value="5">
     </form>
   </div>
 </body>
