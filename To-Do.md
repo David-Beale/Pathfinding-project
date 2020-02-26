@@ -1,7 +1,8 @@
-
--in transit destination change
--curved turning
--time-based pathfinding
--path finding line
--search function
--starting rotation
+- scrollable map
+- camera lock-on
+- UI with options
+- in transit destination change
+- curved turning
+- path finding lines for both pathfinding methods
+- search function
+- starting rotation

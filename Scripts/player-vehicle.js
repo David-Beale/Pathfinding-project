@@ -38,6 +38,7 @@ module.exports = class Player {
     this.step = this.radius / this.speed
     this.enterCornerCheck = false;
     this.exitCornerCheck = false;
+    this.setNewDestination = false;
   }
   click (e) {
     this.clickX = Math.floor((e.pageX / 50)) * 50 + this.radius;
@@ -63,6 +64,9 @@ module.exports = class Player {
       this.dx = 0;
       this.dy = 0;
     }
+    if (this.reachedDestination && this.setNewDestination) {
+      this.savedDestination();
+    }
     if (this.enterCornerCheck) {
       this.enterCorner();
     } else if (this.exitCornerCheck) {
@@ -72,7 +76,11 @@ module.exports = class Player {
       this.findNewPath();
     }
     if (!this.reachedDestination) {
-      this.drawPath();
+      if (!this.setNewDestination) {
+        this.drawPath();
+      } else {
+        this.drawSavedPath();
+      }
       this.currentX += this.dx;
       this.currentY += this.dy;
       if (this.currentX === this.targetX && this.currentY === this.targetY) {
@@ -157,9 +165,10 @@ module.exports = class Player {
         this.currentCornerRouter()
       }
       else {
-        this.targetX = this.nextVertex.x + this.radius;
-        this.targetY = this.nextVertex.y + this.radius;
-        this.nextDirection();
+
+      this.targetX = this.nextVertex.x + this.radius;
+      this.targetY = this.nextVertex.y + this.radius;
+      this.nextDirection();
       }
 
       if (!this.nextVertex.occupied && (this.currentVertex.light === 'green')) {
@@ -183,7 +192,43 @@ module.exports = class Player {
       }
     }
   }
+  savedDestination () {
+    this.setNewDestination = false;
+    this.end = this.save.end
+    this.finalX = this.save.finalX
+    this.finalY = this.save.finalY;
+    this.pathArray = this.save.pathArray;
+    const distance = this.save.distance;
+    const time = (this.getTimeandDistance() / 60)
+    const dijkstraTiming = dijkstraTime(this.map.graphObj, this.start, this.end)[0]
+    // console.log('Normal pathfinding time:', time, 'Time based:', dijkstraTiming / 60)
+    // console.log('Estimated time:', Math.round(time * 100) / 100, 'Distance:', Math.round(distance * 100) / 100, 'Speed', distance / time);
+    this.requireNewPath = true;
+    this.reachedDestination = false;
+  }
   secondClick () {
+    if (!this.reachedDestination) {
+      for (let i = 0; i < this.arrayOfVertices.length; i++) {
+        if (this.map.graphObj[this.arrayOfVertices[i]].x === this.clickX - this.radius && this.map.graphObj[this.arrayOfVertices[i]].y === this.clickY - this.radius) {
+          this.reachedDestination=false;
+          this.finalX = this.nextVertex.x + this.radius;
+          this.finalY = this.nextVertex.y + this.radius;
+          this.end = this.nextVertex.value;
+          this.setNewDestination = true;
+          this.pulseCircle = true;
+          const dijkstraResult = dijkstra(this.map.graphObj, this.end, this.arrayOfVertices[i])
+          console.log(this.currentVertex.value, this.nextVertex.value)
+          console.log(dijkstraResult[1])
+          this.save = {
+            end: this.arrayOfVertices[i],
+            finalX: this.clickX,
+            finalY: this.clickY,
+            pathArray: dijkstraResult[1],
+            distance: dijkstraResult[0]
+          }
+        }
+      }
+    }
     if (this.reachedDestination) {
       for (let i = 0; i < this.arrayOfVertices.length; i++) {
         if (this.map.graphObj[this.arrayOfVertices[i]].x === this.clickX - this.radius && this.map.graphObj[this.arrayOfVertices[i]].y === this.clickY - this.radius) {
@@ -194,10 +239,10 @@ module.exports = class Player {
           const dijkstraResult = dijkstra(this.map.graphObj, this.start, this.end)
           this.pathArray = dijkstraResult[1];
           const distance = dijkstraResult[0]
-          const time = (this.getTimeandDistance()/60)
+          const time = (this.getTimeandDistance() / 60)
           const dijkstraTiming = dijkstraTime(this.map.graphObj, this.start, this.end)[0]
-          console.log('Normal pathfinding time:',time, 'Time based:', dijkstraTiming/60)
-          console.log('Estimated time:',Math.round(time * 100) / 100,'Distance:',Math.round(distance * 100) / 100, 'Speed', distance/time);
+          // console.log('Normal pathfinding time:', time, 'Time based:', dijkstraTiming / 60)
+          // console.log('Estimated time:', Math.round(time * 100) / 100, 'Distance:', Math.round(distance * 100) / 100, 'Speed', distance / time);
           this.requireNewPath = true;
           this.reachedDestination = false;
           this.pulseCircle = true;
@@ -205,7 +250,6 @@ module.exports = class Player {
         }
       }
     }
-
   }
   nextCornerRouter () {
     if (this.nextVertex.corner === 'TLCOuter') {
@@ -429,6 +473,21 @@ module.exports = class Player {
         thisY = thisVertex.y + this.radius
       }
       const nextVertex = this.map.graphObj[this.pathArray[i + 1]]
+      const nextX = nextVertex.x + this.radius
+      const nextY = nextVertex.y + this.radius
+      drawLine(thisX, thisY, nextX, nextY)
+    }
+  }
+  drawSavedPath () {
+    for (let i = 0; i < this.save.pathArray.length - 1; i++) {
+      let thisX
+      let thisY
+
+      const thisVertex = this.map.graphObj[this.save.pathArray[i]]
+      thisX = thisVertex.x + this.radius
+      thisY = thisVertex.y + this.radius
+
+      const nextVertex = this.map.graphObj[this.save.pathArray[i + 1]]
       const nextX = nextVertex.x + this.radius
       const nextY = nextVertex.y + this.radius
       drawLine(thisX, thisY, nextX, nextY)
