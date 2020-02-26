@@ -4,8 +4,42 @@ canvas{
   /* background-color: rgb(55, 54, 58) */
   /* background-image: url('http://api.thumbr.it/whitenoise-1920x1080.png?background=15ab1aff&noise=a67012&density=58&opacity=63') ; */
   background-image: url('https://4.bp.blogspot.com/-dhXmUZ9os3A/WOugo_Hq7jI/AAAAAAAAEBY/EJnkl5QUBwcOvN6xTWsslca5XTTFsTrVwCLcB/s1600/FoilageGrass_1.jpg');
+  /* max-width: 60%; */
+  position: relative;
+  z-index: 1;
 }
 
 body{
   margin: 0;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+.options-container{
+  width: 40%;
+  height: 100vh;
+  background-color: grey;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+button{
+  width:30%;
+  height:10%;
+}
+.speed{
+  margin-top: 10px;
+  width:45%;
+}
+.label{
+  margin-top: 20px;
+  color: blue;
+  font-size: 1.4rem;
+}
+.num-comps{
+  margin-top: 20px;
+  height:5%;
 }

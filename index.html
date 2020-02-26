@@ -12,7 +12,23 @@
 
 <body>
   <canvas> </canvas>
+  <div class="options-container">
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+    <button id="lights-off">Disable traffic lights</button>
+    <button id="lights-on">Enable traffic lights</button>
+    <button id="collision-on">View collission boxes</button>
+    <button id="collision-off">Turn off collission boxes</button>
+    <p class="label">Speed</p>
+    <div class="speed" id="speed-slider"></div>
+    <form class="num-comps" id="num-comps">
+      <label class="label" for="num-comps">Enter number of computer cars</label>
+      <input id="num-comps-val" type="text" value="5">
+    </form>
+  </div>
 </body>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script type="text/javascript" src="Scripts/bundle.js"></script>
 
 </html>

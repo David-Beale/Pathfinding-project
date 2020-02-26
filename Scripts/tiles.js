@@ -1,7 +1,10 @@
 const canvas = document.querySelector('canvas');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// canvas.width = window.innerWidth;
+// canvas.height = window.innerHeight;
+canvas.width = 1800;
+canvas.height = 1150;
+
 
 const c = canvas.getContext('2d');
 
@@ -13,6 +16,9 @@ const tiles = {
     c.rotate(degrees * Math.PI / 180);
     c.drawImage(car, -25, -12.5, 50, 25);
     c.restore();
+  },
+  reset: function () {
+    c.clearRect(0, 0, innerWidth, innerHeight);
   },
   drawTraffic: function (x,y, average) {
     if (average===0) color = 'rgba(70, 240, 36, 0)'

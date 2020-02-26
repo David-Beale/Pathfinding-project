@@ -22,12 +22,17 @@ const arrayOfTrafficLights =
 ]
 
 
-const drawLights = (counter, map) => {
+const drawLights = (counter, map, override) => {
   for (let i = 0; i < arrayOfTrafficLights.length; i++) {
     for (let j = 0; j < arrayOfTrafficLights[0].length; j++) {
       let func = arrayOfTrafficLights[i][j];
       if (lights.includes(func)) {
-        let color = func(j * 100, i * 100, counter);
+        let color
+        if(override) {
+          color = 'green'
+        }
+        else {color = func(j * 100, i * 100, counter)}
+        ;
         updateVertex(i, j, func, color);
       }
     }

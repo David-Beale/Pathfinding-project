@@ -39,18 +39,13 @@ module.exports = class Player {
     this.enterCornerCheck = false;
     this.exitCornerCheck = false;
     this.setNewDestination = false;
-  }
-  click (e) {
-    this.clickX = Math.floor((e.pageX / 50)) * 50 + this.radius;
-    this.clickY = Math.floor((e.pageY / 50)) * 50 + this.radius;
-    if (!this.init && !this.ready) {
-      this.firstClick()
-    } else if (this.ready) {
-      this.secondClick();
-    }
+    this.click = false;
+    this.event;
   }
 
+
   run () {
+
     if (this.init) {
       this.drawNew();
     }
@@ -75,6 +70,16 @@ module.exports = class Player {
     if (this.requireNewPath) {
       this.findNewPath();
     }
+    if (this.click) {
+      this.click = false;
+      this.clickX = Math.floor((this.event.pageX / 50)) * 50 + this.radius;
+      this.clickY = Math.floor((this.event.pageY / 50)) * 50 + this.radius;
+      if (!this.init && !this.ready) {
+        this.firstClick()
+      } else if (this.ready) {
+        this.secondClick();
+      }
+    }
     if (!this.reachedDestination) {
       if (!this.setNewDestination) {
         this.drawPath();
@@ -83,13 +88,13 @@ module.exports = class Player {
       }
       this.currentX += this.dx;
       this.currentY += this.dy;
-      if (this.currentX === this.targetX && this.currentY === this.targetY) {
-        this.requireNewPath = true;
-        this.index++;
-      }
       if (this.currentX === this.finalX && this.currentY === this.finalY) {
         this.requireNewPath = false;
         this.reachedDestination = true;
+      }
+      else if (this.currentX === this.targetX && this.currentY === this.targetY) {
+        this.requireNewPath = true;
+        this.index++;
       }
     }
     if (this.ready) {
@@ -166,9 +171,9 @@ module.exports = class Player {
       }
       else {
 
-      this.targetX = this.nextVertex.x + this.radius;
-      this.targetY = this.nextVertex.y + this.radius;
-      this.nextDirection();
+        this.targetX = this.nextVertex.x + this.radius;
+        this.targetY = this.nextVertex.y + this.radius;
+        this.nextDirection();
       }
 
       if (!this.nextVertex.occupied && (this.currentVertex.light === 'green')) {
@@ -194,6 +199,7 @@ module.exports = class Player {
   }
   savedDestination () {
     this.setNewDestination = false;
+    this.index=0;
     this.end = this.save.end
     this.finalX = this.save.finalX
     this.finalY = this.save.finalY;
@@ -210,15 +216,12 @@ module.exports = class Player {
     if (!this.reachedDestination) {
       for (let i = 0; i < this.arrayOfVertices.length; i++) {
         if (this.map.graphObj[this.arrayOfVertices[i]].x === this.clickX - this.radius && this.map.graphObj[this.arrayOfVertices[i]].y === this.clickY - this.radius) {
-          this.reachedDestination=false;
-          this.finalX = this.nextVertex.x + this.radius;
-          this.finalY = this.nextVertex.y + this.radius;
+          this.finalX = this.targetX;
+          this.finalY = this.targetY;
           this.end = this.nextVertex.value;
           this.setNewDestination = true;
           this.pulseCircle = true;
           const dijkstraResult = dijkstra(this.map.graphObj, this.end, this.arrayOfVertices[i])
-          console.log(this.currentVertex.value, this.nextVertex.value)
-          console.log(dijkstraResult[1])
           this.save = {
             end: this.arrayOfVertices[i],
             finalX: this.clickX,
