@@ -1,9 +1,9 @@
 const canvas = document.querySelector('canvas');
 
-// canvas.width = window.innerWidth;
-// canvas.height = window.innerHeight;
-canvas.width = 1800;
-canvas.height = 1150;
+canvas.width = window.innerWidth*0.7;
+canvas.height = window.innerHeight;
+// canvas.width = 1800;
+// canvas.height = 1150;
 
 
 const c = canvas.getContext('2d');
@@ -69,8 +69,8 @@ const tiles = {
     let dx = targetx-x;
     let dy = targety-y 
     if(dx===0) {
-      c.fillRect(x-2.5, y, 5 + margin, dy*1.05);
-    } else c.fillRect(x, y-2.5, dx*1.05, 5+margin);
+      c.fillRect(x-2.5-margin/2, y, 5 + margin, dy*1.05);
+    } else c.fillRect(x, y-2.5-margin/2, dx*1.05, 5+margin);
 
   },
   XR: function (x, y) {

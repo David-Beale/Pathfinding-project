@@ -62,8 +62,12 @@ $(() => {
         trafficVisFunc()
       }
 
-
       player.run();
+      if (player.compare && compareClickCount === 2) {
+        $('#distance-info').html(`Distance: ${player.comparePaths.distance.distance}<br> Time: ${player.comparePaths.distance.time}`)
+        $('#time-info').html(`Distance: ${player.comparePaths.time.distance}<br> Time: ${player.comparePaths.time.time}`)
+      }
+
       for (let i = 0; i < numberOfComputers; i++) {
         computerArray[i].run()
       }
@@ -78,7 +82,6 @@ $(() => {
   let player = new Player('Player', map);
   let numberOfComputers = 5;
   let computerArray;
-  const usedVertices = []
   const arrayOfVertices = Object.keys(map.graphObj);
   function generateComps (num) {
     if (computerArray) {
@@ -104,42 +107,74 @@ $(() => {
   let override = true;
   let collisionVis = false;
   let trafficVis = false
-  let compareClick = false;
   let compareClickCount = 0;
   generateComps(numberOfComputers)
   animate();
 
   $("canvas").on('click', function (e) {
-    if (!compareClick) {
-      player.click = true;
-      player.event = e;
-    }
-    else if (compareClick && !compareClickCount) {
-      // player.clickX = Math.floor((e.pageX / 50)) * 50 + player.radius
-      // player.clickY = Math.floor((e.pageY / 50)) * 50 + player.radius
-      // player.doPulseCircle();
+    player.click = true;
+    player.event = e;
+    //// If there is no player car already on the map:
+    if (player.compare && !compareClickCount) {
       $('#text').html('Select a destination')
       compareClickCount = 1;
     }
-    else if (compareClickCount === 1) {
-      player.clickX = Math.floor((e.pageX / 50)) * 50 + player.radius
-      player.clickY = Math.floor((e.pageY / 50)) * 50 + player.radius
-      player.doPulseCircle();
+    else if (player.compare && compareClickCount === 1) {
+      $('#distance').removeClass("selected")
+      $('#time').removeClass("selected")
       $('#text').html('Select a method')
-      // compareClick = false;
-      compareClickCount = 0;
+      compareClickCount = 2;
     }
   });
+  $("#distance").on('click', function () {
+    player.pathfinding = 'dijkstra';
+    if (player.compare && compareClickCount === 2) {
+      $('#text').html('Select a destination')
+      $('#distance-info').html(``)
+      $('#time-info').html(``)
+      compareClickCount = 1;
+      player.compare = false;
+      player.findNewPath();
+      $('#compare').removeClass("selected")
+      $("#distance-info").toggleClass("hidden");
+      $("#text").toggleClass("hidden");
+      $("#time-info").toggleClass("hidden");
+    }
+  });
+  $("#time").on('click', function () {
+    player.pathfinding = 'dijkstra-time';
+    if (player.compare && compareClickCount === 2) {
+      $('#text').html('Select a destination')
+      $('#distance-info').html(``)
+      $('#time-info').html(``)
+      compareClickCount = 1;
+      //the default path is distance. Therefore we have to switch it to the time path
+      player.pathColor = 'yellow'
+      if (!player.setNewDestination) {
+        player.pathArray = player.comparePaths.time.path;
+      } else {
+        player.save.pathArray = player.comparePaths.time.path;
+      }
+      player.compare = false;
+      player.findNewPath();
+
+      $('#compare').removeClass("selected")
+      $("#distance-info").toggleClass("hidden");
+      $("#text").toggleClass("hidden");
+      $("#time-info").toggleClass("hidden");
+    }
+  });
+
   $("button").on('click', function () {
     $(this).toggleClass("selected")
     if ($(this).attr('id') === 'distance' && $(this).hasClass("selected") &&
       $('#time').hasClass("selected")) {
       $('#time').toggleClass("selected")
     }
-    else if ($(this).attr('id') === 'time' && $(this).hasClass("selected")  &&
-    $('#distance').hasClass("selected"))  {
+    else if ($(this).attr('id') === 'time' && $(this).hasClass("selected") &&
+      $('#distance').hasClass("selected")) {
       $('#distance').toggleClass("selected")
-    } 
+    }
     else if ($(this).attr('id') === 'compare' && $(this).hasClass("selected")) {
       $('#distance').removeClass("selected")
       $('#time').removeClass("selected")
@@ -159,28 +194,30 @@ $(() => {
   $("#traffic").on('click', function () {
     trafficVis = !trafficVis;
   });
-  $("#distance").on('click', function () {
-    player.pathfinding = 'dijkstra';
-  });
-  $("#time").on('click', function () {
-    player.pathfinding = 'dijkstra-time';
-  });
+
   $("#compare").on('click', function () {
     $("#distance-info").toggleClass("hidden");
     $("#text").toggleClass("hidden");
     $("#time-info").toggleClass("hidden");
 
     if (!$("#text").hasClass("hidden")) {
-      if (!player.nextVertex && player.currentVertex) {
-        player.currentVertex.occupiedFalse();
-      } else if(player.nextVertex){
-        player.nextVertex.occupiedFalse();
+      // if (!player.nextVertex && player.currentVertex) {
+      //   player.currentVertex.occupiedFalse();
+      // } else if (player.nextVertex) {
+      //   player.nextVertex.occupiedFalse();
+      // }
+      player.compare = true;
+      // player = new Player('Player', map);
+      if (player.ready) {
+        $('#text').html('Select a destination')
+        compareClickCount = 1;
+      } else {
+        $('#text').html('Select a start point')
+        compareClickCount = 0;
       }
-      player = new Player('Player', map);
-      $('#text').html('Select a start point')
-      compareClick = true;
+
     } else {
-      compareClick = false;
+      player.compare = false;
     }
   });
 

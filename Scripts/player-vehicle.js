@@ -44,6 +44,7 @@ module.exports = class Player {
     this.pathfinding = 'dijkstra'
     this.dijkstraResult;
     this.pathColor = 'rgb(58, 94, 211)'
+    this.comparePaths = {}
   }
 
 
@@ -91,20 +92,42 @@ module.exports = class Player {
       this.findNewPath();
     }
     if (!this.reachedDestination) {
-      if (!this.setNewDestination) {
-        this.drawPath();
+      // if comparison mode is on, we pause the user, and display only the 2 possible paths
+      if (this.compare) {
+
+        if (!this.setNewDestination) {
+          this.pathColor = 'yellow';
+          this.pathArray = this.comparePaths.time.path;
+          this.drawPath();
+          this.pathColor = 'rgb(58, 94, 211)';
+          this.pathArray = this.comparePaths.distance.path;
+          this.drawPath();
+        } else {
+          this.pathColor = 'yellow';
+          this.save.pathArray = this.comparePaths.time.path;
+          this.drawSavedPath();
+          this.pathColor= 'rgb(58, 94, 211)';
+          this.save.pathArray = this.comparePaths.distance.path;
+          this.drawSavedPath();
+        }
+
+        // if comparison mode is off we will continue movement and position checks
       } else {
-        this.drawSavedPath();
-      }
-      this.currentX += this.dx;
-      this.currentY += this.dy;
-      if (this.currentX === this.finalX && this.currentY === this.finalY) {
-        this.requireNewPath = false;
-        this.reachedDestination = true;
-      }
-      else if (this.currentX === this.targetX && this.currentY === this.targetY) {
-        this.requireNewPath = true;
-        this.index++;
+        if (!this.setNewDestination) {
+          this.drawPath();
+        } else {
+          this.drawSavedPath();
+        }
+        this.currentX += this.dx;
+        this.currentY += this.dy;
+        if (this.currentX === this.finalX && this.currentY === this.finalY) {
+          this.requireNewPath = false;
+          this.reachedDestination = true;
+        }
+        else if (this.currentX === this.targetX && this.currentY === this.targetY) {
+          this.requireNewPath = true;
+          this.index++;
+        }
       }
     }
     if (this.ready) {
@@ -112,6 +135,10 @@ module.exports = class Player {
     }
   }
 
+
+
+
+  ///////////////Functions/////////////////////
   drawNew () {
     if (this.initialRadius > this.radius) {
       this.init = false;
@@ -176,17 +203,18 @@ module.exports = class Player {
       if (this.nextVertex.corner) {
         this.nextCornerRouter()
       }
-      else if (this.currentVertex.corner) {
+      else if (this.currentVertex.corner && this.previousVertexWasACorner) {
         this.currentCornerRouter()
       }
       else {
-
+        this.currentX = this.currentVertex.x + this.radius;
+        this.currentY = this.currentVertex.y + this.radius;
         this.targetX = this.nextVertex.x + this.radius;
         this.targetY = this.nextVertex.y + this.radius;
         this.nextDirection();
       }
 
-      if (!this.nextVertex.occupied && (this.currentVertex.light === 'green')) {
+      if (!this.nextVertex.occupied && (this.currentVertex.light === 'green' && !this.compare)) {
         this.requireNewPath = false;
         this.currentVertex.occupiedFalse();
         this.nextVertex.occupied = true;
@@ -221,6 +249,7 @@ module.exports = class Player {
       }
     }
   }
+  //saved destination will be run if we have selected an in transit destination change. 
   savedDestination () {
     this.setNewDestination = false;
     this.index = 0;
@@ -237,6 +266,7 @@ module.exports = class Player {
     this.reachedDestination = false;
   }
   secondClick () {
+    //If we have an in transit destination change, we will save the new path in memory. The vehicle will continue to the next vertex, then the new path will be applied using savedDestination().
     if (!this.reachedDestination) {
       for (let i = 0; i < this.arrayOfVertices.length; i++) {
         if (this.map.graphObj[this.arrayOfVertices[i]].x === this.clickX - this.radius && this.map.graphObj[this.arrayOfVertices[i]].y === this.clickY - this.radius) {
@@ -245,24 +275,53 @@ module.exports = class Player {
           this.end = this.nextVertex.value;
           this.setNewDestination = true;
           this.pulseCircle = true;
-          if(this.pathfinding === 'dijkstra'){
-            this.dijkstraResult = dijkstra(this.map.graphObj, this.end, this.arrayOfVertices[i])
-            this.pathColor = 'rgb(58, 94, 211)'
-          } else if (this.pathfinding === 'dijkstra-time') {
-            this.dijkstraResult = dijkstraTime(this.map.graphObj, this.end, this.arrayOfVertices[i])
-            this.pathColor = 'yellow'
+          if (this.compare) {
+            let distancePath
+            let distanceDist
+            let timePath
+            let timeTime
+            [distanceDist, distancePath] = dijkstra(this.map.graphObj, this.end, this.arrayOfVertices[i]);
+            [timeTime, timePath] = dijkstraTime(this.map.graphObj, this.end, this.arrayOfVertices[i]);
+            this.comparePaths.distance = {
+              distance: distanceDist,
+              path: distancePath,
+              time: this.getTimeandDistance(distancePath)
+            }
+            this.comparePaths.time = {
+              distance: timePath.length - 1,
+              path: timePath,
+              time: timeTime
+            }
+            this.save = {
+              end: this.arrayOfVertices[i],
+              finalX: this.clickX,
+              finalY: this.clickY,
+              compare: this.comparePaths
+            }
+            //inital path will be time. When we draw the second line, the path will be set to distance. If the user selects time, path will be set back to time
+            this.pathColor = 'yellow';
+            this.dijkstraResult = [timeTime, timePath];
           }
-          
+          else if (this.pathfinding === 'dijkstra') {
+            this.dijkstraResult = dijkstra(this.map.graphObj, this.end, this.arrayOfVertices[i]);
+            this.pathColor = 'rgb(58, 94, 211)';
+          } else if (this.pathfinding === 'dijkstra-time') {
+            this.dijkstraResult = dijkstraTime(this.map.graphObj, this.end, this.arrayOfVertices[i]);
+            this.pathColor = 'yellow';
+          }
+
+
           this.save = {
             end: this.arrayOfVertices[i],
             finalX: this.clickX,
             finalY: this.clickY,
             pathArray: this.dijkstraResult[1],
-            distance: this.dijkstraResult[0]
           }
+
         }
       }
     }
+    // this will run only if the player is stationary.
     if (this.reachedDestination) {
       for (let i = 0; i < this.arrayOfVertices.length; i++) {
         if (this.map.graphObj[this.arrayOfVertices[i]].x === this.clickX - this.radius && this.map.graphObj[this.arrayOfVertices[i]].y === this.clickY - this.radius) {
@@ -270,12 +329,40 @@ module.exports = class Player {
           this.finalX = this.clickX;
           this.finalY = this.clickY;
           this.secondClicked = true;
-          if(this.pathfinding === 'dijkstra'){
-            this.dijkstraResult = dijkstra(this.map.graphObj, this.start, this.end)
-            this.pathColor = 'rgb(58, 94, 211)'
+          if (this.compare) {
+            let distancePath;
+            let distanceDist;
+            let timePath;
+            let timeTime;
+            [distanceDist, distancePath] = dijkstra(this.map.graphObj, this.start, this.end);
+            [timeTime, timePath] = dijkstraTime(this.map.graphObj, this.start, this.end);
+            this.comparePaths.distance = {
+              distance: distanceDist,
+              path: distancePath,
+              time: this.getTimeandDistance(distancePath)
+            }
+            this.comparePaths.time = {
+              distance: timePath.length - 1,
+              path: timePath,
+              time: timeTime
+            }
+            this.save = {
+              end: this.arrayOfVertices[i],
+              finalX: this.clickX,
+              finalY: this.clickY,
+              compare: this.comparePaths
+            }
+            //inital path will be time. When we draw the second line, the path will be set to distance. If the user selects time, path will be set back to time
+            this.pathColor = 'yellow';
+            this.dijkstraResult = [timeTime, timePath];
+            console.log(this.dijkstraResult)
+          }
+          else if (this.pathfinding === 'dijkstra') {
+            this.dijkstraResult = dijkstra(this.map.graphObj, this.start, this.end);
+            this.pathColor = 'rgb(58, 94, 211)';
           } else if (this.pathfinding === 'dijkstra-time') {
-            this.dijkstraResult = dijkstraTime(this.map.graphObj, this.start, this.end)
-            this.pathColor = 'yellow'
+            this.dijkstraResult = dijkstraTime(this.map.graphObj, this.start, this.end);
+            this.pathColor = 'yellow';
           }
           this.pathArray = this.dijkstraResult[1];
           // const distance = dijkstraResult[0]
@@ -286,12 +373,13 @@ module.exports = class Player {
           this.requireNewPath = true;
           this.reachedDestination = false;
           this.pulseCircle = true;
-          i = this.arrayOfVertices.length //end loop when found
+          i = this.arrayOfVertices.length; //end loop when found
         }
       }
     }
   }
   nextCornerRouter () {
+    this.previousVertexWasACorner = true
     if (this.nextVertex.corner === 'TLCOuter') {
       this.dx = 0
       this.dy = -this.speed;
@@ -390,6 +478,7 @@ module.exports = class Player {
     this.enterCorner();
   }
   currentCornerRouter () {
+    this.previousVertexWasACorner = false;
     if (this.currentVertex.corner === 'TLCOuter') {
       this.nextdx = this.speed
       this.nextdy = 0;
@@ -533,10 +622,10 @@ module.exports = class Player {
       drawLine(thisX, thisY, nextX, nextY, this.pathColor)
     }
   }
-  getTimeandDistance () {
+  getTimeandDistance (array = this.pathArray) {
     let time = 0;
-    for (let i = 1; i < this.pathArray.length; i++) {
-      const thisVertex = this.map.graphObj[this.pathArray[i]]
+    for (let i = 1; i < array.length; i++) {
+      const thisVertex = this.map.graphObj[array[i]]
       time += thisVertex.average;
     }
     return time;

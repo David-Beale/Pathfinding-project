@@ -1,8 +1,10 @@
 - scrollable map
-- get speed slider to work
 - camera lock-on
 - toolbar toggle
-- curved turning
-- path finding lines for both pathfinding methods
-- search function
+- curved turning on junctions
+- get speed slider to work with any speed
+- slow down and speed up based on car in front
 - starting rotation
+- random computer speeds
+- two lanes of traffic with auto overtaking
+- search function
