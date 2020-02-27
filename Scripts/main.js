@@ -115,12 +115,18 @@ $(() => {
       player.event = e;
     }
     else if (compareClick && !compareClickCount) {
+      // player.clickX = Math.floor((e.pageX / 50)) * 50 + player.radius
+      // player.clickY = Math.floor((e.pageY / 50)) * 50 + player.radius
+      // player.doPulseCircle();
       $('#text').html('Select a destination')
       compareClickCount = 1;
     }
     else if (compareClickCount === 1) {
+      player.clickX = Math.floor((e.pageX / 50)) * 50 + player.radius
+      player.clickY = Math.floor((e.pageY / 50)) * 50 + player.radius
+      player.doPulseCircle();
       $('#text').html('Select a method')
-      compareClick = false;
+      // compareClick = false;
       compareClickCount = 0;
     }
   });
@@ -165,9 +171,9 @@ $(() => {
     $("#time-info").toggleClass("hidden");
 
     if (!$("#text").hasClass("hidden")) {
-      if (!player.nextVertex) {
+      if (!player.nextVertex && player.currentVertex) {
         player.currentVertex.occupiedFalse();
-      } else {
+      } else if(player.nextVertex){
         player.nextVertex.occupiedFalse();
       }
       player = new Player('Player', map);
