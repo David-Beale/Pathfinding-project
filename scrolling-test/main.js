@@ -7,8 +7,12 @@ class Camera {
   constructor() {
     this.x = 100;
     this.y = 100;
-    this.xOffset = 0 - this.x;
-    this.yOffset = 0 - this.y;
+  }
+  getWidth() {
+    return canvas.width + this.x
+  }
+  getHeight() {
+    return canvas.width + this.x
   }
 }
 const cam = new Camera;
@@ -28,6 +32,8 @@ $(() => {
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
     drawCircle(1000, 1000, 50)
+    drawCircle(1300, 1200, 50)
+    drawCircle(900, 500, 50)
 
     // setTimeout(() => {
     //   // console.log(cam.x,cam.y)
@@ -40,18 +46,19 @@ $(() => {
 let dragging =false;
   $('canvas').mousedown(function (e) {
     // console.log('start',e.pageX, e.pageY)
-    currentX=e.pageX;
-    currentY=e.pageY;
+    prevX=e.pageX;
+    prevY=e.pageY;
     dragging = true;
   })
     .mousemove(function (e) {
       if(dragging===true){
         // console.log(e.pageX, e.pageY)
-        let diffX = e.pageX-currentX
-        let diffY = e.pageY-currentY;
-        cam.x+=diffX;
-        console.log(cam.x)
-        cam.y+=diffY;
+        let diffX = e.pageX-prevX
+        let diffY = e.pageY-prevY;
+        prevX=e.pageX
+        prevY=e.pageY
+        cam.x-=diffX;
+        cam.y-=diffY;
       } 
     })
     .mouseup(function (e) {
