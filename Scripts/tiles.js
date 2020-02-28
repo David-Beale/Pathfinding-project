@@ -6,7 +6,8 @@ canvas.height = window.innerHeight;
 // canvas.width = 1800;
 // canvas.height = 1150;
 
-
+const background = new Image();
+background.src = "./Assets/FoilageGrass_1.jpg";
 const c = canvas.getContext('2d');
 
 
@@ -17,6 +18,12 @@ const tiles = {
     c.rotate(degrees * Math.PI / 180);
     c.drawImage(car, -25, -12.5, 50, 25);
     c.restore();
+  },
+  drawBackground: function () {
+    c.drawImage(background,-canvas.width/2,-canvas.width/2,canvas.width, canvas.width)
+    c.drawImage(background,canvas.width/2,-canvas.width/2,canvas.width, canvas.width)
+    c.drawImage(background,-canvas.width/2,canvas.width/2,canvas.width, canvas.width)
+    c.drawImage(background,canvas.width/2,canvas.width/2,canvas.width, canvas.width)
   },
   reset: function (offsetX, offsetY) {
     c.clearRect(0+offsetX, 0+offsetY, canvas.width, canvas.height);

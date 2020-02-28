@@ -50,7 +50,7 @@ module.exports = class Player {
 
 
   run () {
-
+    
     if (this.init) {
       this.drawNew();
     }
@@ -67,7 +67,7 @@ module.exports = class Player {
     if (this.reachedDestination && this.setNewDestination) {
       this.savedDestination();
     }
-
+    
     if (this.enterCornerCheck) {
       this.enterCorner();
     } else if (this.exitCornerCheck) {
@@ -93,23 +93,24 @@ module.exports = class Player {
       this.findNewPath();
     }
     if (!this.reachedDestination) {
-      // if comparison mode is on, we pause the user, and display only the 2 possible paths
-      if (this.compare) {
-
-        if (!this.setNewDestination) {
-          this.pathColor = 'yellow';
-          this.pathArray = this.comparePaths.time.path;
-          this.drawPath();
-          this.pathColor = 'rgb(58, 94, 211)';
-          this.pathArray = this.comparePaths.distance.path;
-          this.drawPath();
-        } else {
-          this.pathColor = 'yellow';
-          this.save.pathArray = this.comparePaths.time.path;
-          this.drawSavedPath();
-          this.pathColor= 'rgb(58, 94, 211)';
-          this.save.pathArray = this.comparePaths.distance.path;
-          this.drawSavedPath();
+      // if comparison mode is on, we pause the user car, and display only the 2 possible paths
+      if (this.compare) { 
+        if(this.compareReady){ //Need to wait for path to be selected/calculated before drawing
+          if (!this.setNewDestination) {
+            this.pathColor = 'yellow';
+            this.pathArray = this.comparePaths.time.path;
+            this.drawPath();
+            this.pathColor = 'rgb(58, 94, 211)';
+            this.pathArray = this.comparePaths.distance.path;
+            this.drawPath();
+          } else {
+            this.pathColor = 'yellow';
+            this.save.pathArray = this.comparePaths.time.path;
+            this.drawSavedPath();
+            this.pathColor= 'rgb(58, 94, 211)';
+            this.save.pathArray = this.comparePaths.distance.path;
+            this.drawSavedPath();
+          }
         }
 
         // if comparison mode is off we will continue movement and position checks
@@ -293,15 +294,16 @@ module.exports = class Player {
               path: timePath,
               time: timeTime
             }
-            this.save = {
-              end: this.arrayOfVertices[i],
-              finalX: this.clickX,
-              finalY: this.clickY,
-              compare: this.comparePaths
-            }
+            // this.save = {
+            //   end: this.arrayOfVertices[i],
+            //   finalX: this.clickX,
+            //   finalY: this.clickY,
+            //   compare: this.comparePaths
+            // }
             //inital path will be time. When we draw the second line, the path will be set to distance. If the user selects time, path will be set back to time
             this.pathColor = 'yellow';
             this.dijkstraResult = [timeTime, timePath];
+            this.compareReady = true
           }
           else if (this.pathfinding === 'dijkstra') {
             this.dijkstraResult = dijkstra(this.map.graphObj, this.end, this.arrayOfVertices[i]);
@@ -347,16 +349,16 @@ module.exports = class Player {
               path: timePath,
               time: timeTime
             }
-            this.save = {
-              end: this.arrayOfVertices[i],
-              finalX: this.clickX,
-              finalY: this.clickY,
-              compare: this.comparePaths
-            }
+            // this.save = {
+            //   end: this.arrayOfVertices[i],
+            //   finalX: this.clickX,
+            //   finalY: this.clickY,
+            //   compare: this.comparePaths
+            // }
             //inital path will be time. When we draw the second line, the path will be set to distance. If the user selects time, path will be set back to time
             this.pathColor = 'yellow';
             this.dijkstraResult = [timeTime, timePath];
-            console.log(this.dijkstraResult)
+            this.compareReady = true
           }
           else if (this.pathfinding === 'dijkstra') {
             this.dijkstraResult = dijkstra(this.map.graphObj, this.start, this.end);
@@ -570,7 +572,7 @@ module.exports = class Player {
       this.dy = this.targetCornerY - this.currentY
     }
     if (status > this.step) this.enterCornerCheck = false;
-    else this.counter++;
+    else if (!this.compare) this.counter++;
   }
   exitCorner () {
     const status = this.counter;
@@ -588,7 +590,7 @@ module.exports = class Player {
       this.dy = this.targetCornerY - this.currentCornerY
     }
     if (status > 2 * this.step) this.exitCornerCheck = false;
-    else this.counter++;
+    else if (!this.compare) this.counter++;
   }
   drawPath () {
     for (let i = this.index; i < this.pathArray.length - 1; i++) {

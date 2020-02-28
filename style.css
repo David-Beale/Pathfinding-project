@@ -1,9 +1,9 @@
 canvas{
   border: black solid 1px;
-  background-color: rgb(11, 168, 11);
-  /* background-color: rgb(55, 54, 58) */
+  background-color: rgb(201,238,201);
+  /* background-color: rgb(55, 54, 58); */
   /* background-image: url('http://api.thumbr.it/whitenoise-1920x1080.png?background=15ab1aff&noise=a67012&density=58&opacity=63') ; */
-  background-image: url('Assets/FoilageGrass_1.jpg');
+  /* background-image: url('Assets/FoilageGrass_1.jpg'); */
   /* max-width: 60%; */
   position: relative;
   z-index: 1;

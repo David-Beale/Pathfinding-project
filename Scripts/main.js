@@ -2,7 +2,7 @@ const Player = require('./player-vehicle')
 const Computer = require('./computer-vehicle')
 const { drawMap, setUpGraph, map } = require('./map')
 const drawLights = require('./traffic-lights')
-const { drawYellowCircle, drawTraffic, reset } = require('./tiles.js')
+const { drawYellowCircle, drawTraffic, reset, drawBackground } = require('./tiles.js')
 const tiles = require('./tiles.js')
 
 
@@ -52,6 +52,7 @@ $(() => {
         tiles.cameraY -= diffY;
       }
       reset(tiles.cameraX, tiles.cameraY);
+      drawBackground();
       drawMap();
       drawLights(counter, map, override);
       counter++;
@@ -144,7 +145,7 @@ $(() => {
       $('#time-info').html(``)
       compareClickCount = 1;
       player.compare = false;
-      player.findNewPath();
+      player.compareReady = false;
       $('#compare').removeClass("selected")
       $("#distance-info").toggleClass("hidden");
       $("#text").toggleClass("hidden");
@@ -166,7 +167,7 @@ $(() => {
         player.save.pathArray = player.comparePaths.time.path;
       }
       player.compare = false;
-      player.findNewPath();
+      player.compareReady = false;
 
       $('#compare').removeClass("selected")
       $("#distance-info").toggleClass("hidden");
@@ -262,21 +263,7 @@ $(() => {
       generateComps(numberOfComputers)
     })
 
-  // const getPlayerX = () => {
-  //   return player.currentX
-  // }
-  // const exportFuncs = {
-  //   foo: 'bar',
-  //   getPlayerX: function () {
-  //     return player.currentX
-  //   },
-  //   getPlayerY: function () {
-  //     return player.currentY
-  //   }
-  // };
-  // const test = {
-  //   x:10
-  // }
+
   module.exports = player
 
 })
