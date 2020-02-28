@@ -381,26 +381,17 @@ const tiles = {
   c:c,
   cameraX: 0,
   cameraY: 0,
-  draggingOn: false,
   cameraLock: false,
   translate: function(x,y) {
     c.translate(x, y);
   },
 
 }
-let globalCamX = 0;
-let globalCamY = 0;
 $(() => {
-  $("#drag").on('click', function () {
-    tiles.cameraLock = false;
-    $("#lock").removeClass("selected")
-    tiles.draggingOn = !tiles.draggingOn;
-  });
+
   $("#lock").on('click', function () {
     const player = require('./main')
 
-    tiles.draggingOn = false;
-    $("#drag").removeClass("selected")
     tiles.cameraLock = !tiles.cameraLock;
     if(tiles.cameraLock){
       let diffX = (canvas.width/2)-(player.currentX-tiles.cameraX);
@@ -417,11 +408,9 @@ $(() => {
   let dragging = false;
 
   $('canvas').mousedown(function (e) {
-    if (tiles.draggingOn) {
       prevX = e.pageX;
       prevY = e.pageY;
       dragging = true;
-    }
   })
     .mousemove(function (e) {
       if (dragging === true) {
@@ -430,9 +419,7 @@ $(() => {
         prevX = e.pageX
         prevY = e.pageY
         tiles.cameraX -= diffX;
-        globalCamX  -= diffX;
         tiles.cameraY -= diffY;
-        globalCamY  -= diffY;
         c.translate(diffX, diffY);
       }
     })

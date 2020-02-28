@@ -119,8 +119,9 @@ $(() => {
   let compareClickCount = 0;
   generateComps(numberOfComputers)
   animate();
-  $("canvas").on('click', function (e) {
-    if (tiles.draggingOn) {
+  $("canvas").mousedown(function (e) {
+    if (e.which===3) {
+      e.preventDefault
       player.click = true;
       player.event = e;
       //// If there is no player car already on the map:

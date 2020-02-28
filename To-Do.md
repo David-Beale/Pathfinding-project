@@ -1,5 +1,7 @@
-- expand map
+- tips menu
+- improve ui
 - toolbar toggle
+- road works
 - curved turning on junctions
 - get speed slider to work with any speed
 - slow down and speed up based on car in front
