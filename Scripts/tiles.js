@@ -21,9 +21,14 @@ const tiles = {
   },
   drawBackground: function () {
     c.drawImage(background,-canvas.width/2,-canvas.width/2,canvas.width, canvas.width)
-    c.drawImage(background,canvas.width/2,-canvas.width/2,canvas.width, canvas.width)
     c.drawImage(background,-canvas.width/2,canvas.width/2,canvas.width, canvas.width)
+    c.drawImage(background,-canvas.width/2,canvas.width*1.5,canvas.width, canvas.width)
+    c.drawImage(background,canvas.width/2,-canvas.width/2,canvas.width, canvas.width)
     c.drawImage(background,canvas.width/2,canvas.width/2,canvas.width, canvas.width)
+    c.drawImage(background,canvas.width/2,canvas.width*1.5,canvas.width, canvas.width)
+    c.drawImage(background,canvas.width*1.5,-canvas.width/2,canvas.width, canvas.width)
+    c.drawImage(background,canvas.width*1.5,canvas.width/2,canvas.width, canvas.width)
+    c.drawImage(background,canvas.width*1.5,canvas.width*1.5,canvas.width, canvas.width)
   },
   reset: function (offsetX, offsetY) {
     c.clearRect(0+offsetX, 0+offsetY, canvas.width, canvas.height);
@@ -357,7 +362,7 @@ const tiles = {
     return tiles.drawOneLight(x + 108.5, y + 8.5, counter, 0)
   },
   TrLiD1: function (x, y, counter) {
-    returntiles.drawOneLight(x + 91.5, y + 108.5, counter, 0)
+    return tiles.drawOneLight(x + 91.5, y + 108.5, counter, 0)
   },
   TrLiU2: function (x, y, counter) {
     return tiles.drawOneLight(x + 8.5, y - 8.5, counter, 200)
@@ -432,6 +437,9 @@ $(() => {
       }
     })
     .mouseup(function (e) {
+      dragging = false
+    })
+    .mouseleave(function (e) {
       dragging = false
     });
 

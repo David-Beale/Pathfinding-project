@@ -73,8 +73,8 @@ $(() => {
 
       player.run();
       if (player.compare && compareClickCount === 2) {
-        $('#distance-info').html(`Distance: ${player.comparePaths.distance.distance}<br> Time: ${player.comparePaths.distance.time}`)
-        $('#time-info').html(`Distance: ${player.comparePaths.time.distance}<br> Time: ${player.comparePaths.time.time}`)
+        $('#distance-info').html(`Distance: ${player.comparePaths.distance.distance}<br> Time: ${Math.round(player.comparePaths.distance.time)}`)
+        $('#time-info').html(`Distance: ${player.comparePaths.time.distance}<br> Time: ${Math.round(player.comparePaths.time.time)}`)
       }
 
       for (let i = 0; i < numberOfComputers; i++) {
@@ -120,7 +120,7 @@ $(() => {
   generateComps(numberOfComputers)
   animate();
   $("canvas").on('click', function (e) {
-    if (!tiles.draggingOn) {
+    if (tiles.draggingOn) {
       player.click = true;
       player.event = e;
       //// If there is no player car already on the map:
@@ -147,7 +147,7 @@ $(() => {
       player.compare = false;
       player.compareReady = false;
       $('#compare').removeClass("selected")
-      $("#distance-info").toggleClass("hidden");
+      $("#distance-info").toggleClass("hidden");  
       $("#text").toggleClass("hidden");
       $("#time-info").toggleClass("hidden");
     }

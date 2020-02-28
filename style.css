@@ -14,6 +14,7 @@ body{
   display: flex;
   flex-direction: row;
   position: relative;
+  user-select: none;
 }
 .options-container{
   width: 30%;
