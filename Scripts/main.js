@@ -3,6 +3,7 @@ const Computer = require('./computer-vehicle')
 const { drawMap, setUpGraph, map } = require('./map')
 const drawLights = require('./traffic-lights')
 const { drawYellowCircle, drawTraffic, reset } = require('./tiles.js')
+const tiles = require('./tiles.js')
 
 
 const collisionZone = () => {
@@ -43,7 +44,14 @@ $(() => {
   function animate () {
     requestAnimationFrame(animate);
     if (start) {
-      reset();
+      if (tiles.cameraLock) {
+        let diffX = (tiles.width / 2) - (player.currentX - tiles.cameraX);
+        let diffY = (tiles.height / 2) - (player.currentY - tiles.cameraY);
+        tiles.translate(diffX, diffY);
+        tiles.cameraX -= diffX;
+        tiles.cameraY -= diffY;
+      }
+      reset(tiles.cameraX, tiles.cameraY);
       drawMap();
       drawLights(counter, map, override);
       counter++;
@@ -110,22 +118,24 @@ $(() => {
   let compareClickCount = 0;
   generateComps(numberOfComputers)
   animate();
-
   $("canvas").on('click', function (e) {
-    player.click = true;
-    player.event = e;
-    //// If there is no player car already on the map:
-    if (player.compare && !compareClickCount) {
-      $('#text').html('Select a destination')
-      compareClickCount = 1;
-    }
-    else if (player.compare && compareClickCount === 1) {
-      $('#distance').removeClass("selected")
-      $('#time').removeClass("selected")
-      $('#text').html('Select a method')
-      compareClickCount = 2;
+    if (!tiles.draggingOn) {
+      player.click = true;
+      player.event = e;
+      //// If there is no player car already on the map:
+      if (player.compare && !compareClickCount) {
+        $('#text').html('Select a destination')
+        compareClickCount = 1;
+      }
+      else if (player.compare && compareClickCount === 1) {
+        $('#distance').removeClass("selected")
+        $('#time').removeClass("selected")
+        $('#text').html('Select a method')
+        compareClickCount = 2;
+      }
     }
   });
+
   $("#distance").on('click', function () {
     player.pathfinding = 'dijkstra';
     if (player.compare && compareClickCount === 2) {
@@ -251,4 +261,22 @@ $(() => {
       numberOfComputers = $('#num-comps-val').val();
       generateComps(numberOfComputers)
     })
+
+  // const getPlayerX = () => {
+  //   return player.currentX
+  // }
+  // const exportFuncs = {
+  //   foo: 'bar',
+  //   getPlayerX: function () {
+  //     return player.currentX
+  //   },
+  //   getPlayerY: function () {
+  //     return player.currentY
+  //   }
+  // };
+  // const test = {
+  //   x:10
+  // }
+  module.exports = player
+
 })

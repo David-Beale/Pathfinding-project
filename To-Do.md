@@ -1,5 +1,4 @@
-- scrollable map
-- camera lock-on
+- expand map
 - toolbar toggle
 - curved turning on junctions
 - get speed slider to work with any speed

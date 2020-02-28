@@ -1,6 +1,7 @@
+
 const canvas = document.querySelector('canvas');
 
-canvas.width = window.innerWidth*0.7;
+canvas.width = window.innerWidth * 0.7;
 canvas.height = window.innerHeight;
 // canvas.width = 1800;
 // canvas.height = 1150;
@@ -17,13 +18,13 @@ const tiles = {
     c.drawImage(car, -25, -12.5, 50, 25);
     c.restore();
   },
-  reset: function () {
-    c.clearRect(0, 0, innerWidth, innerHeight);
+  reset: function (offsetX, offsetY) {
+    c.clearRect(0+offsetX, 0+offsetY, canvas.width, canvas.height);
   },
-  drawTraffic: function (x,y, average) {
-    if (average===0) color = 'rgba(70, 240, 36, 0)'
-    else if (average<=15) color = 'rgba(70, 240, 36, 0.1)'
-    else if (average <=25) color = 'rgba(226, 240, 36, 0.3)' 
+  drawTraffic: function (x, y, average) {
+    if (average === 0) color = 'rgba(70, 240, 36, 0)'
+    else if (average <= 15) color = 'rgba(70, 240, 36, 0.1)'
+    else if (average <= 25) color = 'rgba(226, 240, 36, 0.3)'
     else color = 'rgba(240, 36, 36, 0.3)'
     c.beginPath();
     c.fillStyle = color;
@@ -63,14 +64,14 @@ const tiles = {
     c.beginPath();
     c.fillStyle = color;
     let margin = 0;
-    if(color === 'yellow') {
+    if (color === 'yellow') {
       margin = 1.5;
     }
-    let dx = targetx-x;
-    let dy = targety-y 
-    if(dx===0) {
-      c.fillRect(x-2.5-margin/2, y, 5 + margin, dy*1.05);
-    } else c.fillRect(x, y-2.5-margin/2, dx*1.05, 5+margin);
+    let dx = targetx - x;
+    let dy = targety - y
+    if (dx === 0) {
+      c.fillRect(x - 2.5 - margin / 2, y, 5 + margin, dy * 1.05);
+    } else c.fillRect(x, y - 2.5 - margin / 2, dx * 1.05, 5 + margin);
 
   },
   XR: function (x, y) {
@@ -363,7 +364,71 @@ const tiles = {
   TrLiD2: function (x, y, counter) {
     return tiles.drawOneLight(x + 91.5, y + 108.5, counter, 200)
   },
+  width: canvas.width,
+  height: canvas.height,
+  c:c,
+  cameraX: 0,
+  cameraY: 0,
+  draggingOn: false,
+  cameraLock: false,
+  translate: function(x,y) {
+    c.translate(x, y);
+  },
 
 }
+let globalCamX = 0;
+let globalCamY = 0;
+$(() => {
+  $("#drag").on('click', function () {
+    tiles.cameraLock = false;
+    $("#lock").removeClass("selected")
+    tiles.draggingOn = !tiles.draggingOn;
+  });
+  $("#lock").on('click', function () {
+    const player = require('./main')
+
+    tiles.draggingOn = false;
+    $("#drag").removeClass("selected")
+    tiles.cameraLock = !tiles.cameraLock;
+    if(tiles.cameraLock){
+      let diffX = (canvas.width/2)-(player.currentX-tiles.cameraX);
+      let diffY = (canvas.height/2)-(player.currentY-tiles.cameraY);
+      
+      c.translate(diffX, diffY);
+      tiles.cameraX -= diffX;
+      tiles.cameraY -= diffY;
+      tiles.reset(tiles.cameraX, tiles.cameraY)
+    }
+  });
+
+
+  let dragging = false;
+
+  $('canvas').mousedown(function (e) {
+    if (tiles.draggingOn) {
+      prevX = e.pageX;
+      prevY = e.pageY;
+      dragging = true;
+    }
+  })
+    .mousemove(function (e) {
+      if (dragging === true) {
+        let diffX = e.pageX - prevX
+        let diffY = e.pageY - prevY;
+        prevX = e.pageX
+        prevY = e.pageY
+        tiles.cameraX -= diffX;
+        globalCamX  -= diffX;
+        tiles.cameraY -= diffY;
+        globalCamY  -= diffY;
+        c.translate(diffX, diffY);
+      }
+    })
+    .mouseup(function (e) {
+      dragging = false
+    });
+
+})
+
 
 module.exports = tiles;

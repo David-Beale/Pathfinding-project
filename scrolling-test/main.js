@@ -21,7 +21,8 @@ const c = canvas.getContext('2d');
 
 function drawCircle (x, y, radius) {
   c.beginPath();
-  c.arc(x - cam.x, y - cam.y, radius, 0, Math.PI * 2, false);
+  c.arc(x, y, radius, 0, Math.PI * 2, false);
+  // c.arc(x - cam.x, y - cam.y, radius, 0, Math.PI * 2, false);
   c.fillStyle = 'white'
   c.strokeStyle = 'white';
   c.stroke();
@@ -32,9 +33,9 @@ $(() => {
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
     drawCircle(1000, 1000, 50)
-    drawCircle(1300, 1200, 50)
+    drawCircle(1300, 900, 50)
     drawCircle(900, 500, 50)
-
+    // c.translate(10, 0);
     // setTimeout(() => {
     //   // console.log(cam.x,cam.y)
     // }, 1000); 
@@ -59,6 +60,7 @@ let dragging =false;
         prevY=e.pageY
         cam.x-=diffX;
         cam.y-=diffY;
+        c.translate(diffX, diffY);
       } 
     })
     .mouseup(function (e) {

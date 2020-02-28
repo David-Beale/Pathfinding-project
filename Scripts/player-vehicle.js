@@ -1,6 +1,7 @@
 const dijkstra = require('./Graph/dijkstra');
 const dijkstraTime = require('./Graph/dijkstra-time');
 const { drawCar, drawOutlineCircle, drawCircle, drawLine } = require('./tiles.js')
+const tiles = require('./tiles.js')
 
 module.exports = class Player {
   constructor(value, map) {
@@ -77,8 +78,8 @@ module.exports = class Player {
     }
     if (this.click) {
       this.click = false;
-      this.clickX = Math.floor((this.event.pageX / 50)) * 50 + this.radius;
-      this.clickY = Math.floor((this.event.pageY / 50)) * 50 + this.radius;
+      this.clickX = Math.floor( (this.event.pageX + tiles.cameraX) / 50) * 50 + this.radius;
+      this.clickY = Math.floor( (this.event.pageY + tiles.cameraY) / 50) * 50 + this.radius;
       if (!this.init && !this.ready) {
         this.firstClick()
       } else if (this.ready) {
