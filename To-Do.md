@@ -1,11 +1,14 @@
-- tips menu
+
+- curved turning on junctions
 - improve ui
 - toolbar toggle
-- road works
-- curved turning on junctions
 - get speed slider to work with any speed
 - slow down and speed up based on car in front
-- starting rotation
+
+
+- speed restriction zone
 - random computer speeds
+- tips menu
+- starting rotation
 - two lanes of traffic with auto overtaking
 - search function

@@ -50,7 +50,7 @@ module.exports = class Player {
 
 
   run () {
-    
+
     if (this.init) {
       this.drawNew();
     }
@@ -67,19 +67,19 @@ module.exports = class Player {
     if (this.reachedDestination && this.setNewDestination) {
       this.savedDestination();
     }
-    
-    if (this.enterCornerCheck) {
-      this.enterCorner();
-    } else if (this.exitCornerCheck) {
-      this.exitCorner();
+
+    if (this.subPath1Go) {
+      this.subPath1();
+    } else if (this.subPath2Go) {
+      this.subPath2();
     }
     if (this.requireNewPath) {
       this.findNewPath();
     }
     if (this.click) {
       this.click = false;
-      this.clickX = Math.floor( (this.event.pageX + tiles.cameraX) / 50) * 50 + this.radius;
-      this.clickY = Math.floor( (this.event.pageY + tiles.cameraY) / 50) * 50 + this.radius;
+      this.clickX = Math.floor((this.event.pageX + tiles.cameraX) / 50) * 50 + this.radius;
+      this.clickY = Math.floor((this.event.pageY + tiles.cameraY) / 50) * 50 + this.radius;
       if (!this.init && !this.ready) {
         this.firstClick()
       } else if (this.ready) {
@@ -94,8 +94,8 @@ module.exports = class Player {
     }
     if (!this.reachedDestination) {
       // if comparison mode is on, we pause the user car, and display only the 2 possible paths
-      if (this.compare) { 
-        if(this.compareReady){ //Need to wait for path to be selected/calculated before drawing
+      if (this.compare) {
+        if (this.compareReady) { //Need to wait for path to be selected/calculated before drawing
           if (!this.setNewDestination) {
             this.pathColor = 'yellow';
             this.pathArray = this.comparePaths.time.path;
@@ -107,7 +107,7 @@ module.exports = class Player {
             this.pathColor = 'yellow';
             this.save.pathArray = this.comparePaths.time.path;
             this.drawSavedPath();
-            this.pathColor= 'rgb(58, 94, 211)';
+            this.pathColor = 'rgb(58, 94, 211)';
             this.save.pathArray = this.comparePaths.distance.path;
             this.drawSavedPath();
           }
@@ -122,9 +122,14 @@ module.exports = class Player {
         }
         this.currentX += this.dx;
         this.currentY += this.dy;
+        console.log(this.dx, this.dy)
+        console.log(this.currentX, this.currentY)
         if (this.currentX === this.finalX && this.currentY === this.finalY) {
           this.requireNewPath = false;
           this.reachedDestination = true;
+          this.direction0 = null;
+          this.direction1 = null;
+          this.direction2 = null;
         }
         else if (this.currentX === this.targetX && this.currentY === this.targetY) {
           this.requireNewPath = true;
@@ -170,74 +175,7 @@ module.exports = class Player {
     this.initialRadius += this.pulseSpeed;
   }
 
-  nextDirection () {
-    if (this.currentX - this.targetX > 0) {
-      this.direction = 0;
-      this.dx = -this.speed;
-      this.dy = 0;
-    }
-    if (this.currentX - this.targetX < 0) {
-      this.direction = 180;
-      this.dx = this.speed;
-      this.dy = 0;
-    }
-    if (this.currentY - this.targetY > 0) {
-      this.direction = 90;
-      this.dx = 0;
-      this.dy = -this.speed;
-    }
-    if (this.currentY - this.targetY < 0) {
-      this.direction = 270;
-      this.dx = 0;
-      this.dy = this.speed;
-    }
-  }
 
-  findNewPath () {
-    if (this.index === this.pathArray.length - 1) {
-      this.reachedDestination = true;
-      this.requireNewPath = false;
-      this.dx = 0
-      this.dy = 0
-    } else {
-      this.currentVertex = this.map.graphObj[this.pathArray[this.index]]
-      this.nextVertex = this.map.graphObj[this.pathArray[this.index + 1]]
-      if (this.nextVertex.corner) {
-        this.nextCornerRouter()
-      }
-      else if (this.currentVertex.corner && this.previousVertexWasACorner) {
-        this.currentCornerRouter()
-      }
-      else {
-        this.currentX = this.currentVertex.x + this.radius;
-        this.currentY = this.currentVertex.y + this.radius;
-        this.targetX = this.nextVertex.x + this.radius;
-        this.targetY = this.nextVertex.y + this.radius;
-        this.nextDirection();
-      }
-
-      if (!this.nextVertex.occupied && (this.currentVertex.light === 'green' && !this.compare)) {
-        this.requireNewPath = false;
-        this.currentVertex.occupiedFalse();
-        this.nextVertex.occupied = true;
-        // this.nextVertex.speed = this.speed;
-      } else this.dx = this.dy = 0;
-
-      // if (this.nextVertex.occupied || (this.currentVertex.light !== 'green')) {
-      //   this.dx = 0;
-      //   this.dy = 0;
-      // }
-      // if(this.nextVertex.occupied && this.nextVertex.speed < this.speed){
-      //   this.speed = this.nextVertex.speed
-      // } 
-      // else {
-      //   this.requireNewPath = false;
-      //   this.currentVertex.occupiedFalse();
-      //   this.nextVertex.occupied = true;
-      //   this.nextVertex.speed = this.speed;
-      // }
-    }
-  }
   firstClick () {
     for (let i = 0; i < this.arrayOfVertices.length; i++) {
       if (this.map.graphObj[this.arrayOfVertices[i]].x === this.clickX - this.radius && this.map.graphObj[this.arrayOfVertices[i]].y === this.clickY - this.radius) {
@@ -294,12 +232,6 @@ module.exports = class Player {
               path: timePath,
               time: timeTime
             }
-            // this.save = {
-            //   end: this.arrayOfVertices[i],
-            //   finalX: this.clickX,
-            //   finalY: this.clickY,
-            //   compare: this.comparePaths
-            // }
             //inital path will be time. When we draw the second line, the path will be set to distance. If the user selects time, path will be set back to time
             this.pathColor = 'yellow';
             this.dijkstraResult = [timeTime, timePath];
@@ -312,7 +244,6 @@ module.exports = class Player {
             this.dijkstraResult = dijkstraTime(this.map.graphObj, this.end, this.arrayOfVertices[i]);
             this.pathColor = 'yellow';
           }
-
 
           this.save = {
             end: this.arrayOfVertices[i],
@@ -349,12 +280,6 @@ module.exports = class Player {
               path: timePath,
               time: timeTime
             }
-            // this.save = {
-            //   end: this.arrayOfVertices[i],
-            //   finalX: this.clickX,
-            //   finalY: this.clickY,
-            //   compare: this.comparePaths
-            // }
             //inital path will be time. When we draw the second line, the path will be set to distance. If the user selects time, path will be set back to time
             this.pathColor = 'yellow';
             this.dijkstraResult = [timeTime, timePath];
@@ -368,11 +293,6 @@ module.exports = class Player {
             this.pathColor = 'yellow';
           }
           this.pathArray = this.dijkstraResult[1];
-          // const distance = dijkstraResult[0]
-          // const time = (this.getTimeandDistance() / 60)
-          // const dijkstraTiming = dijkstraTime(this.map.graphObj, this.start, this.end)[0]
-          // console.log('Normal pathfinding time:', time, 'Time based:', dijkstraTiming / 60)
-          // console.log('Estimated time:', Math.round(time * 100) / 100, 'Distance:', Math.round(distance * 100) / 100, 'Speed', distance / time);
           this.requireNewPath = true;
           this.reachedDestination = false;
           this.pulseCircle = true;
@@ -381,217 +301,7 @@ module.exports = class Player {
       }
     }
   }
-  nextCornerRouter () {
-    this.previousVertexWasACorner = true
-    if (this.nextVertex.corner === 'TLCOuter') {
-      this.dx = 0
-      this.dy = -this.speed;
-      this.direction = 90;
-      this.angleOffset = 0;
-      this.xOffset = 0;
-      this.yOffset = 0;
-      this.xrotationOffset = 0;
-      this.yrotationOffset = 0;
-      this.rotationSign = 1;
-    }
-    else if (this.nextVertex.corner === 'TRCOuter') {
-      this.dx = this.speed
-      this.dy = 0;
-      this.direction = 180;
-      this.angleOffset = 90;
-      this.xOffset = -50;
-      this.yOffset = 0;
-      this.xrotationOffset = 0;
-      this.yrotationOffset = 0;
-      this.rotationSign = 1;
-    }
-    else if (this.nextVertex.corner === 'BRCOuter') {
-      this.dx = 0;
-      this.dy = this.speed;
-      this.direction = 270;
-      this.angleOffset = 180;
-      this.xOffset = -50;
-      this.yOffset = -50;
-      this.xrotationOffset = 0;
-      this.yrotationOffset = 0;
-      this.rotationSign = 1;
-    }
-    else if (this.nextVertex.corner === 'BLCOuter') {
-      this.dx = -this.speed
-      this.dy = 0;
-      this.direction = 0;
-      this.angleOffset = 270;
-      this.xOffset = 0;
-      this.yOffset = -50;
-      this.xrotationOffset = 0;
-      this.yrotationOffset = 0;
-      this.rotationSign = 1;
-    }
-    else if (this.nextVertex.corner === 'TLCInner') {
-      this.dx = -this.speed
-      this.dy = 0;
-      this.direction = 0;
-      this.angleOffset = 0;
-      this.xOffset = 0;
-      this.yOffset = 0;
-      this.xrotationOffset = 270;
-      this.yrotationOffset = 90;
-      this.rotationSign = -1;
 
-    }
-    else if (this.nextVertex.corner === 'TRCInner') {
-      this.dx = 0
-      this.dy = -this.speed;
-      this.direction = 90;
-      this.angleOffset = 270;
-      this.xOffset = -50;
-      this.yOffset = 0;
-      this.xrotationOffset = 270;
-      this.yrotationOffset = 90;
-      this.rotationSign = -1;
-    }
-    else if (this.nextVertex.corner === 'BRCInner') {
-      this.dx = this.speed;
-      this.dy = 0;
-      this.direction = 180;
-      this.angleOffset = 180;
-      this.xOffset = -50;
-      this.yOffset = -50;
-      this.xrotationOffset = 270;
-      this.yrotationOffset = 90;
-      this.rotationSign = -1;
-    }
-    else if (this.nextVertex.corner === 'BLCInner') {
-      this.dx = 0;
-      this.dy = this.speed;
-      this.direction = 270;
-      this.angleOffset = 90;
-      this.xOffset = 0;
-      this.yOffset = -50;
-      this.xrotationOffset = 270;
-      this.yrotationOffset = 90;
-      this.rotationSign = -1;
-    }
-    this.angle = this.angleOffset + 45
-    this.targetX = Math.floor(this.xOffset + (this.nextVertex.x + 2 * this.radius) - (this.radius * Math.cos(Math.PI / 180 * (this.angle + this.xrotationOffset))))
-
-    this.targetY = Math.floor(this.yOffset + (this.nextVertex.y + 2 * this.radius) - (this.radius * Math.sin(Math.PI / 180 * (this.angle + this.yrotationOffset))))
-    this.enterCornerCheck = true;
-    this.counter = 1;
-    this.enterCorner();
-  }
-  currentCornerRouter () {
-    this.previousVertexWasACorner = false;
-    if (this.currentVertex.corner === 'TLCOuter') {
-      this.nextdx = this.speed
-      this.nextdy = 0;
-      this.nextdirection = 180;
-      this.angleOffset = 0;
-      this.xrotationOffset = 0;
-      this.yrotationOffset = 0;
-      this.rotationSign = 1;
-    }
-    else if (this.currentVertex.corner === 'TRCOuter') {
-      this.nextdx = 0;
-      this.nextdy = this.speed;
-      this.nextdirection = 270;
-      this.angleOffset = 90;
-      this.xrotationOffset = 0;
-      this.yrotationOffset = 0;
-      this.rotationSign = 1;
-    }
-    else if (this.currentVertex.corner === 'BRCOuter') {
-      this.nextdx = -this.speed
-      this.nextdy = 0;
-      this.nextdirection = 0;
-      this.angleOffset = 180;
-      this.xrotationOffset = 0;
-      this.yrotationOffset = 0;
-      this.rotationSign = 1;
-    }
-    else if (this.currentVertex.corner === 'BLCOuter') {
-      this.nextdx = 0
-      this.nextdy = -this.speed;
-      this.nextdirection = 90;
-      this.angleOffset = 270;
-      this.xrotationOffset = 0;
-      this.yrotationOffset = 0;
-      this.rotationSign = 1;
-    }
-    else if (this.currentVertex.corner === 'TLCInner') {
-      this.nextdx = 0;
-      this.nextdy = this.speed;
-      this.nextdirection = 270;
-      this.angleOffset = 0;
-      this.xrotationOffset = 270;
-      this.yrotationOffset = 90;
-      this.rotationSign = -1;
-    }
-    else if (this.currentVertex.corner === 'TRCInner') {
-      this.nextdx = -this.speed;
-      this.nextdy = 0;
-      this.nextdirection = 0;
-      this.angleOffset = 270;
-      this.xrotationOffset = 270;
-      this.yrotationOffset = 90;
-      this.rotationSign = -1;
-    }
-    else if (this.currentVertex.corner === 'BRCInner') {
-      this.nextdx = 0;
-      this.nextdy = -this.speed;
-      this.nextdirection = 90;
-      this.angleOffset = 180;
-      this.xrotationOffset = 270;
-      this.yrotationOffset = 90;
-      this.rotationSign = -1;
-    }
-    else if (this.currentVertex.corner === 'BLCInner') {
-      this.nextdx = this.speed;
-      this.nextdy = 0;
-      this.nextdirection = 180;
-      this.angleOffset = 90;
-      this.xrotationOffset = 270;
-      this.yrotationOffset = 90;
-      this.rotationSign = -1;
-    }
-    this.targetX = this.nextVertex.x + this.radius;
-    this.targetY = this.nextVertex.y + this.radius;
-    this.counter = 1;
-    this.enterCornerCheck = false;
-    this.exitCornerCheck = true;
-    this.exitCorner();
-  }
-  enterCorner () {
-    const status = this.counter - (this.step);
-    if (status > 0) {
-      this.angle = this.angleOffset + (status * (45 / this.step))
-      this.direction = this.rotationSign * (this.angle + 90 - this.yrotationOffset);
-      this.targetCornerX = Math.floor(this.xOffset + (this.nextVertex.x + 2 * this.radius) - (this.radius * Math.cos(Math.PI / 180 * (this.angle + this.xrotationOffset))))
-      this.targetCornerY = Math.floor(this.yOffset + (this.nextVertex.y + 2 * this.radius) - (this.radius * Math.sin(Math.PI / 180 * (this.angle + this.yrotationOffset))))
-      this.dx = this.targetCornerX - this.currentX
-      this.dy = this.targetCornerY - this.currentY
-    }
-    if (status > this.step) this.enterCornerCheck = false;
-    else if (!this.compare) this.counter++;
-  }
-  exitCorner () {
-    const status = this.counter;
-    if (status > this.step) {
-      this.dx = this.nextdx;
-      this.dy = this.nextdy;
-    } else {
-      this.currentCornerX = this.currentX
-      this.currentCornerY = this.currentY
-      this.angle = this.angleOffset + (90 - (this.step - status) * (45 / this.step))
-      this.direction = this.rotationSign * (this.angle + 90 - this.yrotationOffset);
-      this.targetCornerX = Math.floor(this.xOffset + (this.currentVertex.x + 2 * this.radius) - (this.radius * Math.cos(Math.PI / 180 * (this.angle + this.xrotationOffset))))
-      this.targetCornerY = Math.floor(this.yOffset + (this.currentVertex.y + 2 * this.radius) - (this.radius * Math.sin(Math.PI / 180 * (this.angle + this.yrotationOffset))))
-      this.dx = this.targetCornerX - this.currentCornerX
-      this.dy = this.targetCornerY - this.currentCornerY
-    }
-    if (status > 2 * this.step) this.exitCornerCheck = false;
-    else if (!this.compare) this.counter++;
-  }
   drawPath () {
     for (let i = this.index; i < this.pathArray.length - 1; i++) {
       let thisX
@@ -633,4 +343,192 @@ module.exports = class Player {
     }
     return time;
   }
+  getDirection (x1, x2, y1, y2) {
+    if (x1 > x2) return 0;
+    else if (x2 > x1) return 180;
+    else if (y2 > y1) return 270;
+    else if (y1 > y2) return 90;
+  }
+
+  getMovement (direction1, direction2) {
+    if (direction1 === direction2) return 'straight';
+    else if (direction2 > direction1 || (direction2 === 0 && direction1 === 270)) return 'right';
+    else if (direction2 < direction1 || (direction1 === 0 && direction2 === 270)) return 'left';
+  }
+  getSubPath (movement1, movement2) {
+    if (movement1 === 'straight' && movement2 === 'straight') return [this.straight, this.straight];
+    else if (movement1 === 'straight' && movement2 === 'right') return [this.straight, this.enterRight];
+    else if (movement1 === 'straight' && movement2 === 'left') return [this.straight, this.enterLeft];
+    else if (movement1 === 'right' && movement2 === 'straight') return [this.exitRight, this.straight];
+    else if (movement1 === 'left' && movement2 === 'straight') return [this.exitLeft, this.straight];
+    else if (movement1 === 'right' && movement2 === 'right') return [this.exitRight, this.enterRight];
+    else if (movement1 === 'right' && movement2 === 'left') return [this.exitRight, this.enterLeft];
+    else if (movement1 === 'left' && movement2 === 'right') return [this.exitLeft, this.enterRight];
+    else if (movement1 === 'left' && movement2 === 'left') return [this.exitLeft, this.enterLeft];
+  }
+  updateCounter () {
+    
+    if (this.counter === this.stepCount) {
+      if (this.subPath1Go) {
+        this.subPath1Go = false;
+        this.counter = 0;
+      } else {
+        this.subPath2Go = false;
+      }
+    }
+  }
+  straight () {
+    console.log('straight ahead')
+    if (!this.compare) this.counter++
+    if (this.subPath1Go) {
+      this.initialDirection(this.direction1)
+    } else this.initialDirection(this.direction2)
+    
+    this.targetX = this.nextVertex.x + this.radius;
+    this.targetY = this.nextVertex.y + this.radius;
+    this.updateCounter();
+  }
+  getStartingCoords (direction, movement) {
+    let vertex;
+    if(this.subPath1Go){
+      vertex = this.currentVertex
+    } else {
+      vertex = this.nextVertex
+    }
+    if ((direction === 90 && movement === 'right') || (direction === 0 && movement === 'left'))
+      return [(vertex.x + 50), (vertex.y + 50)]
+    else if ((direction === 180 && movement === 'right') || (direction === 90 && movement === 'left'))
+      return [vertex.x, (vertex.y + 50)]
+    else if ((direction === 270 && movement === 'right') || (direction === 180 && movement === 'left'))
+      return [vertex.x, (vertex.y)]
+    else if ((direction === 0 && movement === 'right') || (direction === 270 && movement === 'left'))
+      return [vertex.x + 50, (vertex.y)]
+
+  }
+  enterRight () {
+    if (!this.compare) this.counter++
+    console.log(this.direction)
+    let initialAngle = this.direction1 - 90;
+    this.angle = initialAngle + (this.counter * (45 / this.stepCount))
+    let targetAngle = initialAngle + 45;
+    this.direction = this.angle + 90;
+    let [startX, startY] = this.getStartingCoords(this.direction1, this.movement2);
+    this.targetCornerX = Math.round(startX - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
+    this.targetCornerY = Math.round(startY - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
+    this.dx = this.targetCornerX - this.currentX
+    this.dy = this.targetCornerY - this.currentY
+    this.targetX = Math.round(startX - (this.radius * Math.cos(Math.PI / 180 * targetAngle)))
+    this.targetY = Math.round(startY - (this.radius * Math.sin(Math.PI / 180 * targetAngle)))
+    // console.log( Math.round(startX - (this.radius * Math.cos(Math.PI / 180 * 45))))
+    // console.log( Math.round(startY - (this.radius * Math.sin(Math.PI / 180 * 45))))
+    
+    this.updateCounter();
+  }
+  enterLeft () {
+    if (!this.compare) this.counter++
+    let initialAngle = this.direction1;
+    this.angle = initialAngle + (this.counter * (45 / this.stepCount))
+    this.direction -= this.angle;
+    let [startX, startY] = this.getStartingCoords(this.direction1, this.movement2);
+    this.targetCornerX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
+    this.targetCornerY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
+    this.dx = this.targetCornerX - this.currentX
+    this.dy = this.targetCornerY - this.currentY
+    this.targetX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * 45)))
+    this.targetY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * 45)))
+    this.updateCounter();
+  }
+  exitRight () {
+    if (!this.compare) this.counter++
+    let initialAngle = this.direction0 - 45;
+    this.angle = initialAngle + (this.counter * (45 / this.stepCount))
+    this.direction = this.angle + 90;
+    let [startX, startY] = this.getStartingCoords(this.direction0, this.movement1);
+    this.targetCornerX = Math.round(startX - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
+    this.targetCornerY = Math.round(startY - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
+    this.dx = this.targetCornerX - this.currentX
+    this.dy = this.targetCornerY - this.currentY
+    this.updateCounter();
+  }
+  exitLeft () {
+    if (!this.compare) this.counter++
+    let initialAngle = this.direction0 + 45;
+    this.angle = initialAngle + (this.counter * (45 / this.stepCount))
+    this.direction -= this.angle;
+    let [startX, startY] = this.getStartingCoords(this.direction0, this.movement1);
+    this.targetCornerX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
+    this.targetCornerY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
+    this.dx = this.targetCornerX - this.currentX
+    this.dy = this.targetCornerY - this.currentY
+    this.updateCounter();
+  }
+
+  initialDirection (direction) {
+    if (direction === 0) {
+      this.dx = -this.speed;
+      this.dy = 0;
+    }
+    else if (direction === 180) {
+      this.dx = this.speed;
+      this.dy = 0;
+    }
+    else if (direction === 90) {
+      this.dx = 0;
+      this.dy = -this.speed;
+    }
+    else if (direction = 270) {
+      this.dx = 0;
+      this.dy = this.speed;
+    }
+  }
+
+  findNewPath () {
+    console.log('newpath')
+    if (this.index === this.pathArray.length - 1) {
+      this.reachedDestination = true;
+      this.requireNewPath = false;
+      this.dx = 0
+      this.dy = 0
+    } else {
+      this.currentVertex = this.map.graphObj[this.pathArray[this.index]]
+      this.nextVertex = this.map.graphObj[this.pathArray[this.index + 1]]
+
+      if (this.direction1) this.direction0 = this.direction1;
+      if (this.direction2) this.direction1 = this.direction2;
+      else this.direction1 = this.getDirection(this.currentVertex.x, this.nextVertex.x, this.currentVertex.y, this.nextVertex.y)
+
+      if (this.pathArray[this.index + 2]) {
+        this.nextNextVertex = this.map.graphObj[this.pathArray[this.index + 2]]
+        this.direction2 = this.getDirection(this.nextVertex.x, this.nextNextVertex.x, this.nextVertex.y, this.nextNextVertex.y)
+        console.log('direction2', this.direction2)
+      } else {
+        //if there is only 1 vertex left, we will always take a straight line to the end.
+        this.direction2 = this.direction1;
+      }
+      console.log('direction0 and 1',this.direction0, this.direction1)
+      if (this.direction0) this.movement1 = this.getMovement(this.direction0, this.direction1)
+      else {
+        this.initialDirection(this.direction1) // When we start, we need to set the initial dx, dy values
+        this.direction = this.direction1;
+        this.movement1 = 'straight';
+      }
+      this.movement2 = this.getMovement(this.direction1, this.direction2)
+      let subPath = this.getSubPath(this.movement1, this.movement2);
+      this.subPath1 = subPath[0]
+      this.subPath2 = subPath[1]
+      this.counter = 0;
+      this.subPath1Go = true;
+      this.subPath2Go = true;
+      this.stepCount = Math.round(25 / this.speed);
+      this.subPath1();
+
+
+      if (!this.nextVertex.occupied && (this.currentVertex.light === 'green' && !this.compare)) {
+        this.requireNewPath = false;
+        this.currentVertex.occupiedFalse();
+        this.nextVertex.occupied = true;
+      } else this.dx = this.dy = 0;
+    }
+  }
+
 }
