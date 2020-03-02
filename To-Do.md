@@ -1,5 +1,4 @@
 
-- curved turning on junctions
 - improve ui
 - toolbar toggle
 - get speed slider to work with any speed

@@ -71,12 +71,12 @@ module.exports = class Player {
     if (this.reachedDestination && this.setNewDestination) {
       this.savedDestination();
     }
-
+    if(!this.stopped && !this.compare)
     if (this.subPath1Go) {
       this.subPath1();
     } else if (this.subPath2Go) {
       this.subPath2();
-      if(this.reset) {
+      if (this.reset) {
         this.reset = false;
         this.finalX = this.targetX;
         this.finalY = this.targetY;
@@ -96,7 +96,7 @@ module.exports = class Player {
       }
     }
     //We need to find a new path before and after the click event just in case 
-    //the click occurs when the car requires a part. This would break the
+    //the click occurs when the car requires a path. This would break the
     //in transit repathing.
     if (this.requireNewPath) {
       this.findNewPath();
@@ -129,18 +129,23 @@ module.exports = class Player {
         } else {
           this.drawSavedPath();
         }
-        this.currentX += this.dx;
-        this.currentY += this.dy;
-        if (this.currentX === this.finalX && this.currentY === this.finalY) {
-          this.requireNewPath = false;
-          this.reachedDestination = true;
-          this.direction0 = null;
-          this.direction1 = null;
-          this.direction2 = null;
-        }
-        else if (this.currentX === this.targetX && this.currentY === this.targetY) {
-          this.requireNewPath = true;
-          this.index++;
+        if(this.stopped) {
+          this.collissionCheck();
+        } else {
+          this.currentX += this.dx;
+          this.currentY += this.dy;
+          console.log('current',this.currentX, this.currentY, 'target', this.targetX, this.targetY, 'delta', this.dx, this.dy)
+          if (this.currentX === this.finalX && this.currentY === this.finalY) {
+            this.requireNewPath = false;
+            this.reachedDestination = true;
+            this.direction0 = null;
+            this.direction1 = null;
+            this.direction2 = null;
+          }
+          else if (this.currentX === this.targetX && this.currentY === this.targetY) {
+            this.requireNewPath = true;
+            this.index++;
+          }
         }
       }
     }
@@ -153,6 +158,18 @@ module.exports = class Player {
 
 
   ///////////////Functions/////////////////////
+  collissionCheck () {
+    console.log('check', this.nextVertex.occupied,this.currentVertex.light, this.compare )
+    if (!this.nextVertex.occupied && this.currentVertex.light === 'green' && !this.compare) {
+      this.currentVertex.occupiedFalse();
+      this.nextVertex.occupied = true;
+      this.dx = this.saveDx;
+      this.dy = this.saveDy;
+      this.stopped = false;
+      // this.currentX = this.currentVertex.x;
+      // this.currentY = this.currentVertex.y;
+    }
+  }
   drawNew () {
     if (this.initialRadius > this.radius) {
       this.init = false;
@@ -199,8 +216,8 @@ module.exports = class Player {
   //saved destination will be run if we have selected an in transit destination change. 
   savedDestination () {
     this.setNewDestination = false;
-    this.currentX = this.nextVertex.x+this.radius;
-    this.currentY = this.nextVertex.y+this.radius;
+    this.currentX = this.nextVertex.x + this.radius;
+    this.currentY = this.nextVertex.y + this.radius;
     this.index = 0;
     this.end = this.save.end
     this.finalX = this.save.finalX
@@ -358,7 +375,7 @@ module.exports = class Player {
     else if (direction2 === 0 && direction1 === 270) return 'right'
     else if (direction1 === 0 && direction2 === 270) return 'left'
     else if (direction2 > direction1) return 'right';
-    else if (direction2 < direction1 ) return 'left';
+    else if (direction2 < direction1) return 'left';
   }
   getSubPath (movement1, movement2) {
     if (movement1 === 'straight' && movement2 === 'straight') return [this.straight, this.straight];
@@ -383,7 +400,7 @@ module.exports = class Player {
     }
   }
   straight () {
-    if (!this.compare) this.counter++
+    if (!this.compare&&!this.stopped) this.counter++
     if (this.subPath1Go) {
       this.initialDirection(this.direction1)
       this.direction = this.direction1
@@ -391,7 +408,7 @@ module.exports = class Player {
       this.initialDirection(this.direction2)
       this.direction = this.direction2;
     }
-      
+
 
     this.targetX = this.nextVertex.x + this.radius;
     this.targetY = this.nextVertex.y + this.radius;
@@ -415,7 +432,7 @@ module.exports = class Player {
 
   }
   enterRight () {
-    if (!this.compare) this.counter++
+    if (!this.compare&&!this.stopped) this.counter++
     let initialAngle = this.direction1 - 90;
     this.angle = initialAngle + (this.counter * (45 / this.stepCount))
     let targetAngle = initialAngle + 45;
@@ -430,7 +447,7 @@ module.exports = class Player {
     this.updateCounter();
   }
   exitRight () {
-    if (!this.compare) this.counter++
+    if (!this.compare&&!this.stopped) this.counter++
     let initialAngle = this.direction0 - 45;
     this.angle = initialAngle + (this.counter * (45 / this.stepCount))
     this.direction = this.angle + 90;
@@ -442,7 +459,7 @@ module.exports = class Player {
     this.updateCounter();
   }
   enterLeft () {
-    if (!this.compare) this.counter++
+    if (!this.compare&&!this.stopped) this.counter++
     let initialAngle = 360 - this.direction1;
     let angleDelta = (this.counter * (45 / this.stepCount));
     this.angle = initialAngle + angleDelta
@@ -458,11 +475,11 @@ module.exports = class Player {
     this.updateCounter();
   }
   exitLeft () {
-    if (!this.compare) this.counter++
-    let initialAngle = (360 -this.direction0) + 45;
+    if (!this.compare&&!this.stopped) this.counter++
+    let initialAngle = (360 - this.direction0) + 45;
     let angleDelta = (this.counter * (45 / this.stepCount))
     this.angle = initialAngle + angleDelta;
-    this.direction = 360 - initialAngle - angleDelta ;
+    this.direction = 360 - initialAngle - angleDelta;
     let [startX, startY] = this.getStartingCoords(this.direction0, this.movement1);
     this.targetCornerX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
     this.targetCornerY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
@@ -491,6 +508,7 @@ module.exports = class Player {
   }
 
   findNewPath () {
+    console.log('new path')
     if (this.index === this.pathArray.length - 1) {
       this.reachedDestination = true;
       this.requireNewPath = false;
@@ -529,11 +547,17 @@ module.exports = class Player {
       this.subPath1();
 
 
-      if (!this.nextVertex.occupied && (this.currentVertex.light === 'green' && !this.compare)) {
-        this.requireNewPath = false;
+      this.requireNewPath = false;
+      if (!this.nextVertex.occupied && this.currentVertex.light === 'green' && !this.compare) {
         this.currentVertex.occupiedFalse();
         this.nextVertex.occupied = true;
-      } else this.dx = this.dy = 0;
+      } else {
+        console.log('stop')
+        this.stopped = true;
+        this.saveDx = this.dx;
+        this.saveDy = this.dy;
+        this.dx = this.dy = 0;
+      }
     }
   }
 
