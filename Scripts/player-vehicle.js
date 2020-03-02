@@ -46,6 +46,9 @@ module.exports = class Player {
     this.dijkstraResult;
     this.pathColor = 'rgb(58, 94, 211)'
     this.comparePaths = {}
+    this.direction0 = null;
+    this.direction1 = null;
+    this.direction2 = null;
   }
 
 
@@ -72,6 +75,11 @@ module.exports = class Player {
       this.subPath1();
     } else if (this.subPath2Go) {
       this.subPath2();
+      if(this.reset) {
+        this.reset = false;
+        this.finalX = this.targetX;
+        this.finalY = this.targetY;
+      }
     }
     if (this.requireNewPath) {
       this.findNewPath();
@@ -122,8 +130,6 @@ module.exports = class Player {
         }
         this.currentX += this.dx;
         this.currentY += this.dy;
-        console.log(this.dx, this.dy)
-        console.log(this.currentX, this.currentY)
         if (this.currentX === this.finalX && this.currentY === this.finalY) {
           this.requireNewPath = false;
           this.reachedDestination = true;
@@ -192,16 +198,13 @@ module.exports = class Player {
   //saved destination will be run if we have selected an in transit destination change. 
   savedDestination () {
     this.setNewDestination = false;
+    this.currentX = this.nextVertex.x+this.radius;
+    this.currentY = this.nextVertex.y+this.radius;
     this.index = 0;
     this.end = this.save.end
     this.finalX = this.save.finalX
     this.finalY = this.save.finalY;
     this.pathArray = this.save.pathArray;
-    // const distance = this.save.distance;
-    // const time = (this.getTimeandDistance() / 60)
-    // const dijkstraTiming = dijkstraTime(this.map.graphObj, this.start, this.end)[0]
-    // console.log('Normal pathfinding time:', time, 'Time based:', dijkstraTiming / 60)
-    // console.log('Estimated time:', Math.round(time * 100) / 100, 'Distance:', Math.round(distance * 100) / 100, 'Speed', distance / time);
     this.requireNewPath = true;
     this.reachedDestination = false;
   }
@@ -210,8 +213,7 @@ module.exports = class Player {
     if (!this.reachedDestination) {
       for (let i = 0; i < this.arrayOfVertices.length; i++) {
         if (this.map.graphObj[this.arrayOfVertices[i]].x === this.clickX - this.radius && this.map.graphObj[this.arrayOfVertices[i]].y === this.clickY - this.radius) {
-          this.finalX = this.targetX;
-          this.finalY = this.targetY;
+          this.reset = true;
           this.end = this.nextVertex.value;
           this.setNewDestination = true;
           this.pulseCircle = true;
@@ -352,8 +354,10 @@ module.exports = class Player {
 
   getMovement (direction1, direction2) {
     if (direction1 === direction2) return 'straight';
-    else if (direction2 > direction1 || (direction2 === 0 && direction1 === 270)) return 'right';
-    else if (direction2 < direction1 || (direction1 === 0 && direction2 === 270)) return 'left';
+    else if (direction2 === 0 && direction1 === 270) return 'right'
+    else if (direction1 === 0 && direction2 === 270) return 'left'
+    else if (direction2 > direction1) return 'right';
+    else if (direction2 < direction1 ) return 'left';
   }
   getSubPath (movement1, movement2) {
     if (movement1 === 'straight' && movement2 === 'straight') return [this.straight, this.straight];
@@ -367,7 +371,7 @@ module.exports = class Player {
     else if (movement1 === 'left' && movement2 === 'left') return [this.exitLeft, this.enterLeft];
   }
   updateCounter () {
-    
+
     if (this.counter === this.stepCount) {
       if (this.subPath1Go) {
         this.subPath1Go = false;
@@ -378,19 +382,18 @@ module.exports = class Player {
     }
   }
   straight () {
-    console.log('straight ahead')
     if (!this.compare) this.counter++
     if (this.subPath1Go) {
       this.initialDirection(this.direction1)
     } else this.initialDirection(this.direction2)
-    
+
     this.targetX = this.nextVertex.x + this.radius;
     this.targetY = this.nextVertex.y + this.radius;
     this.updateCounter();
   }
   getStartingCoords (direction, movement) {
     let vertex;
-    if(this.subPath1Go){
+    if (this.subPath1Go) {
       vertex = this.currentVertex
     } else {
       vertex = this.nextVertex
@@ -407,7 +410,6 @@ module.exports = class Player {
   }
   enterRight () {
     if (!this.compare) this.counter++
-    console.log(this.direction)
     let initialAngle = this.direction1 - 90;
     this.angle = initialAngle + (this.counter * (45 / this.stepCount))
     let targetAngle = initialAngle + 45;
@@ -419,23 +421,6 @@ module.exports = class Player {
     this.dy = this.targetCornerY - this.currentY
     this.targetX = Math.round(startX - (this.radius * Math.cos(Math.PI / 180 * targetAngle)))
     this.targetY = Math.round(startY - (this.radius * Math.sin(Math.PI / 180 * targetAngle)))
-    // console.log( Math.round(startX - (this.radius * Math.cos(Math.PI / 180 * 45))))
-    // console.log( Math.round(startY - (this.radius * Math.sin(Math.PI / 180 * 45))))
-    
-    this.updateCounter();
-  }
-  enterLeft () {
-    if (!this.compare) this.counter++
-    let initialAngle = this.direction1;
-    this.angle = initialAngle + (this.counter * (45 / this.stepCount))
-    this.direction -= this.angle;
-    let [startX, startY] = this.getStartingCoords(this.direction1, this.movement2);
-    this.targetCornerX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
-    this.targetCornerY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
-    this.dx = this.targetCornerX - this.currentX
-    this.dy = this.targetCornerY - this.currentY
-    this.targetX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * 45)))
-    this.targetY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * 45)))
     this.updateCounter();
   }
   exitRight () {
@@ -450,11 +435,28 @@ module.exports = class Player {
     this.dy = this.targetCornerY - this.currentY
     this.updateCounter();
   }
+  enterLeft () {
+    if (!this.compare) this.counter++
+    let initialAngle = 360 - this.direction1;
+    let angleDelta = (this.counter * (45 / this.stepCount));
+    this.angle = initialAngle + angleDelta
+    let targetAngle = initialAngle + 45;
+    this.direction = 360 - initialAngle - angleDelta;
+    let [startX, startY] = this.getStartingCoords(this.direction1, this.movement2);
+    this.targetCornerX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
+    this.targetCornerY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
+    this.dx = this.targetCornerX - this.currentX
+    this.dy = this.targetCornerY - this.currentY
+    this.targetX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * targetAngle)))
+    this.targetY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * targetAngle)))
+    this.updateCounter();
+  }
   exitLeft () {
     if (!this.compare) this.counter++
-    let initialAngle = this.direction0 + 45;
-    this.angle = initialAngle + (this.counter * (45 / this.stepCount))
-    this.direction -= this.angle;
+    let initialAngle = (360 -this.direction0) + 45;
+    let angleDelta = (this.counter * (45 / this.stepCount))
+    this.angle = initialAngle + angleDelta;
+    this.direction = 360 - initialAngle - angleDelta ;
     let [startX, startY] = this.getStartingCoords(this.direction0, this.movement1);
     this.targetCornerX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
     this.targetCornerY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
@@ -483,7 +485,6 @@ module.exports = class Player {
   }
 
   findNewPath () {
-    console.log('newpath')
     if (this.index === this.pathArray.length - 1) {
       this.reachedDestination = true;
       this.requireNewPath = false;
@@ -493,20 +494,19 @@ module.exports = class Player {
       this.currentVertex = this.map.graphObj[this.pathArray[this.index]]
       this.nextVertex = this.map.graphObj[this.pathArray[this.index + 1]]
 
-      if (this.direction1) this.direction0 = this.direction1;
-      if (this.direction2) this.direction1 = this.direction2;
+
+      if (this.direction1 !== null) this.direction0 = this.direction1;
+      if (this.direction2 !== null) this.direction1 = this.direction2;
       else this.direction1 = this.getDirection(this.currentVertex.x, this.nextVertex.x, this.currentVertex.y, this.nextVertex.y)
 
       if (this.pathArray[this.index + 2]) {
         this.nextNextVertex = this.map.graphObj[this.pathArray[this.index + 2]]
         this.direction2 = this.getDirection(this.nextVertex.x, this.nextNextVertex.x, this.nextVertex.y, this.nextNextVertex.y)
-        console.log('direction2', this.direction2)
       } else {
         //if there is only 1 vertex left, we will always take a straight line to the end.
         this.direction2 = this.direction1;
       }
-      console.log('direction0 and 1',this.direction0, this.direction1)
-      if (this.direction0) this.movement1 = this.getMovement(this.direction0, this.direction1)
+      if (this.direction0 !== null) this.movement1 = this.getMovement(this.direction0, this.direction1)
       else {
         this.initialDirection(this.direction1) // When we start, we need to set the initial dx, dy values
         this.direction = this.direction1;
