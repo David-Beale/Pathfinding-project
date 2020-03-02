@@ -2,7 +2,7 @@
 
 const canvas = document.querySelector('canvas');
 
-canvas.width = window.innerWidth * 0.7;
+canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 // canvas.width = 1800;
 // canvas.height = 1150;
@@ -21,18 +21,20 @@ const tiles = {
     c.restore();
   },
   drawBackground: function () {
-    c.drawImage(background,-canvas.width/2,-canvas.width/2,canvas.width, canvas.width)
-    c.drawImage(background,-canvas.width/2,canvas.width/2,canvas.width, canvas.width)
-    c.drawImage(background,-canvas.width/2,canvas.width*1.5,canvas.width, canvas.width)
-    c.drawImage(background,canvas.width/2,-canvas.width/2,canvas.width, canvas.width)
-    c.drawImage(background,canvas.width/2,canvas.width/2,canvas.width, canvas.width)
-    c.drawImage(background,canvas.width/2,canvas.width*1.5,canvas.width, canvas.width)
-    c.drawImage(background,canvas.width*1.5,-canvas.width/2,canvas.width, canvas.width)
-    c.drawImage(background,canvas.width*1.5,canvas.width/2,canvas.width, canvas.width)
-    c.drawImage(background,canvas.width*1.5,canvas.width*1.5,canvas.width, canvas.width)
+    c.drawImage(background, -canvas.width / 2, -canvas.width / 2, canvas.width, canvas.width)
+    c.drawImage(background, -canvas.width / 2, canvas.width / 2, canvas.width, canvas.width)
+    c.drawImage(background, -canvas.width / 2, canvas.width * 1.5, canvas.width, canvas.width)
+    c.drawImage(background, canvas.width / 2, -canvas.width / 2, canvas.width, canvas.width)
+    c.drawImage(background, canvas.width / 2, canvas.width / 2, canvas.width, canvas.width)
+    c.drawImage(background, canvas.width / 2, canvas.width * 1.5, canvas.width, canvas.width)
+    c.drawImage(background, canvas.width * 1.5, -canvas.width / 2, canvas.width, canvas.width)
+    c.drawImage(background, canvas.width * 1.5, canvas.width / 2, canvas.width, canvas.width)
+    c.drawImage(background, canvas.width * 1.5, canvas.width * 1.5, canvas.width, canvas.width)
   },
-  reset: function (offsetX, offsetY) {
-    c.clearRect(0+offsetX, 0+offsetY, canvas.width, canvas.height);
+  reset: function (offsetX, offsetY, scale) {
+    let x = (0 + offsetX) - 0.5*canvas.width/scale;
+    let y = (0 + offsetY) - 0.5*canvas.height/scale;
+    c.clearRect(x, y, 3*canvas.width/scale, 3*canvas.height/scale);
   },
   drawTraffic: function (x, y, average) {
     let color;
@@ -91,6 +93,28 @@ const tiles = {
   XR: function (x, y) {
     c.fillStyle = 'rgb(55, 55, 55)';
     c.fillRect(x, y, 100, 100);
+  },
+  lake: function (x, y) {
+    c.beginPath();
+    c.fillStyle = "rgb(246,215,176)";
+    c.ellipse(x+250, y+50, 130, 320, Math.PI / 2, 0, 2 * Math.PI);
+    c.fill()
+    var thumbImg = document.createElement('img');
+    thumbImg.src = './Assets/water.jpg';
+    c.save();
+    c.beginPath();
+    c.ellipse(x+250, y+50, 120, 300, Math.PI / 2, 0, 2 * Math.PI);
+    c.closePath();
+    c.clip();
+
+    c.drawImage(thumbImg, x-100, y-100, 700, 700);
+
+    c.beginPath();
+    c.ellipse(x, y, 120, 300, Math.PI / 2, 0, 2 * Math.PI);
+    c.clip();
+    c.closePath();
+    c.restore();
+
   },
   HR: function (x, y) {
     c.fillStyle = 'rgb(55, 55, 55)';
@@ -380,13 +404,14 @@ const tiles = {
   },
   width: canvas.width,
   height: canvas.height,
-  c:c,
+  c: c,
   cameraX: 0,
   cameraY: 0,
   cameraLock: false,
-  translate: function(x,y) {
+  translate: function (x, y) {
     c.translate(x, y);
   },
+  cameraScale: 1,
 
 }
 $(() => {
@@ -395,13 +420,13 @@ $(() => {
     const player = require('./main')
 
     tiles.cameraLock = !tiles.cameraLock;
-    if(tiles.cameraLock){
-      let diffX = (canvas.width/2)-(player.currentX-tiles.cameraX);
-      let diffY = (canvas.height/2)-(player.currentY-tiles.cameraY);
-      
+    if (tiles.cameraLock) {
+      let diffX = (((canvas.width) / (2 * tiles.cameraScale)) - (player.currentX - tiles.cameraX / tiles.cameraScale))
+      let diffY = (((canvas.height) / (2 * tiles.cameraScale)) - (player.currentY - tiles.cameraY / tiles.cameraScale))
+
       c.translate(diffX, diffY);
-      tiles.cameraX -= diffX;
-      tiles.cameraY -= diffY;
+      tiles.cameraX -= diffX * tiles.cameraScale;
+      tiles.cameraY -= diffY * tiles.cameraScale;
       tiles.reset(tiles.cameraX, tiles.cameraY)
     }
   });
@@ -412,28 +437,53 @@ $(() => {
   let prevY;
 
   $('canvas').mousedown(function (e) {
-      prevX = e.pageX;
-      prevY = e.pageY;
-      dragging = true;
+    prevX = e.pageX;
+    prevY = e.pageY;
+    dragging = true;
   })
-    .mousemove(function (e) {
-      if (dragging === true) {
-        let diffX = e.pageX - prevX
-        let diffY = e.pageY - prevY;
-        prevX = e.pageX
-        prevY = e.pageY
-        tiles.cameraX -= diffX;
-        tiles.cameraY -= diffY;
-        c.translate(diffX, diffY);
-      }
-    })
+  $('html').mousemove(function (e) {
+    if (dragging === true) {
+      let diffX = (e.pageX - prevX) / tiles.cameraScale;
+      let diffY = (e.pageY - prevY) / tiles.cameraScale;
+      prevX = e.pageX
+      prevY = e.pageY
+      tiles.cameraX -= diffX * tiles.cameraScale;
+      tiles.cameraY -= diffY * tiles.cameraScale;
+      c.translate(diffX, diffY);
+      tiles.reset(tiles.cameraX, tiles.cameraY)
+    }
+  })
     .mouseup(function () {
       dragging = false
     })
-    .mouseleave(function () {
-      dragging = false
-    });
 
+
+  $('canvas').bind('mousewheel', function (e) {
+    if (e.originalEvent.wheelDelta / 120 > 0) {
+      c.scale(1.25, 1.25)
+
+      tiles.cameraScale *= 1.25
+      let cameraDiff = 0.25;
+
+      let diffX = -(((tiles.cameraX + e.pageX) * (cameraDiff)) / tiles.cameraScale)
+      let diffY = -(((tiles.cameraY + e.pageY) * (cameraDiff)) / tiles.cameraScale)
+      c.translate(diffX, diffY);
+      tiles.cameraX -= diffX * tiles.cameraScale;
+      tiles.cameraY -= diffY * tiles.cameraScale;
+      tiles.reset(tiles.cameraX, tiles.cameraY)
+    }
+    else {
+      c.scale(0.8, 0.8)
+      tiles.cameraScale *= 0.8;
+      let cameraDiff = 0.2
+      let diffX = (((tiles.cameraX + e.pageX) * (cameraDiff)) / tiles.cameraScale)
+      let diffY = (((tiles.cameraY + e.pageY) * (cameraDiff)) / tiles.cameraScale)
+      c.translate(diffX, diffY);
+      tiles.cameraX -= diffX * tiles.cameraScale;
+      tiles.cameraY -= diffY * tiles.cameraScale;
+      tiles.reset(tiles.cameraX, tiles.cameraY)
+    }
+  });
 })
 
 

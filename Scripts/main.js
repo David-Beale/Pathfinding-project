@@ -3,7 +3,7 @@ const Player = require('./player-vehicle')
 const Computer = require('./computer-vehicle')
 const { drawMap, setUpGraph, map } = require('./map')
 const drawLights = require('./traffic-lights')
-const { drawYellowCircle, drawTraffic, reset, drawBackground } = require('./tiles.js')
+const { drawYellowCircle, drawTraffic, reset, drawBackground,lake } = require('./tiles.js')
 const tiles = require('./tiles.js')
 
 
@@ -46,15 +46,16 @@ $(() => {
     requestAnimationFrame(animate);
     if (start) {
       if (tiles.cameraLock) {
-        let diffX = (tiles.width / 2) - (player.currentX - tiles.cameraX);
-        let diffY = (tiles.height / 2) - (player.currentY - tiles.cameraY);
+        let diffX = (tiles.width / (2*tiles.cameraScale)) - (player.currentX - tiles.cameraX/tiles.cameraScale);
+        let diffY = (tiles.height / (2*tiles.cameraScale)) - (player.currentY - tiles.cameraY/tiles.cameraScale);
         tiles.translate(diffX, diffY);
-        tiles.cameraX -= diffX;
-        tiles.cameraY -= diffY;
+        tiles.cameraX -= diffX*tiles.cameraScale;
+        tiles.cameraY -= diffY*tiles.cameraScale;
       }
-      reset(tiles.cameraX, tiles.cameraY);
+      reset(tiles.cameraX, tiles.cameraY, tiles.cameraScale);
       drawBackground();
       drawMap();
+      // lake(1200,800);
       drawLights(counter, map, override);
       counter++;
       if (counter === limit) counter = 0;
@@ -207,6 +208,26 @@ $(() => {
   $("#traffic").on('click', function () {
     trafficVis = !trafficVis;
   });
+  $("#tips").mouseenter(function () {
+    $('#tips-box').removeClass('hidden');
+  }).mouseleave(function() {
+    $('#tips-box').addClass('hidden');
+  })
+  let menuClosed = true;
+  $("#menu").on('click', function () {
+    $('#menu').toggleClass('change');
+    if(menuClosed){
+      $('#options2').slideDown('slow', () => {
+        $('#options2buttons').fadeIn(400)
+      })
+      menuClosed = false;
+    } else {
+      $('#options2').slideUp('slow', () => {
+        $('#options2buttons').hide();
+      })
+      menuClosed = true;
+    }
+  });
 
   $("#compare").on('click', function () {
     $("#distance-info").toggleClass("hidden");
@@ -214,13 +235,7 @@ $(() => {
     $("#time-info").toggleClass("hidden");
 
     if (!$("#text").hasClass("hidden")) {
-      // if (!player.nextVertex && player.currentVertex) {
-      //   player.currentVertex.occupiedFalse();
-      // } else if (player.nextVertex) {
-      //   player.nextVertex.occupiedFalse();
-      // }
       player.compare = true;
-      // player = new Player('Player', map);
       if (player.ready) {
         $('#text').html('Select a destination')
         compareClickCount = 1;

@@ -87,8 +87,10 @@ module.exports = class Player {
     }
     if (this.click) {
       this.click = false;
-      this.clickX = Math.floor((this.event.pageX + tiles.cameraX) / 50) * 50 + this.radius;
-      this.clickY = Math.floor((this.event.pageY + tiles.cameraY) / 50) * 50 + this.radius;
+      let xCoord = (this.event.pageX + tiles.cameraX)/tiles.cameraScale
+      let yCoord = (this.event.pageY + tiles.cameraY)/tiles.cameraScale
+      this.clickX = Math.floor(xCoord / 50) * 50 + this.radius;
+      this.clickY = Math.floor(yCoord / 50) * 50 + this.radius;
       if (!this.init && !this.ready) {
         this.firstClick()
       } else if (this.ready) {

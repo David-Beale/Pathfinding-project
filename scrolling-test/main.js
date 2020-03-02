@@ -1,6 +1,6 @@
 const canvas = document.querySelector('canvas');
 
-canvas.width = window.innerWidth * 0.7;
+canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 class Camera {
