@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const Player = require('./player-vehicle')
 const Computer = require('./computer-vehicle')
 const { drawMap, setUpGraph, map } = require('./map')

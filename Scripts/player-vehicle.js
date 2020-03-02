@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const dijkstra = require('./Graph/dijkstra');
 const dijkstraTime = require('./Graph/dijkstra-time');
 const { drawCar, drawOutlineCircle, drawCircle, drawLine } = require('./tiles.js')
@@ -483,7 +484,7 @@ module.exports = class Player {
       this.dx = 0;
       this.dy = -this.speed;
     }
-    else if (direction = 270) {
+    else if (direction === 270) {
       this.dx = 0;
       this.dy = this.speed;
     }

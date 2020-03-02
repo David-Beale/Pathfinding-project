@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 const { XR, HR, TB, TT, VR, TR, TL, TLC, TRC, BRC, BLC, TrLiU1, TrLiL1, TrLiR1, TrLiD1, TrLiU2, TrLiL2, TrLiR2, TrLiD2 } = require('./tiles')
 const { mapOfVertices } = require('./map')
 
@@ -65,7 +67,6 @@ const drawLights = (counter, map, override) => {
           color = 'green'
         }
         else {color = func(j * 100, i * 100, counter)}
-        ;
         updateVertex(i, j, func, color);
       }
     }

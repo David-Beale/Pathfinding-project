@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 
 const canvas = document.querySelector('canvas');
 
@@ -34,6 +35,7 @@ const tiles = {
     c.clearRect(0+offsetX, 0+offsetY, canvas.width, canvas.height);
   },
   drawTraffic: function (x, y, average) {
+    let color;
     if (average === 0) color = 'rgba(70, 240, 36, 0)'
     else if (average <= 15) color = 'rgba(70, 240, 36, 0.1)'
     else if (average <= 25) color = 'rgba(226, 240, 36, 0.3)'
@@ -406,6 +408,8 @@ $(() => {
 
 
   let dragging = false;
+  let prevX;
+  let prevY;
 
   $('canvas').mousedown(function (e) {
       prevX = e.pageX;
@@ -423,10 +427,10 @@ $(() => {
         c.translate(diffX, diffY);
       }
     })
-    .mouseup(function (e) {
+    .mouseup(function () {
       dragging = false
     })
-    .mouseleave(function (e) {
+    .mouseleave(function () {
       dragging = false
     });
 
