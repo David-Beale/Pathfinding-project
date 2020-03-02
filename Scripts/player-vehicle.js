@@ -385,7 +385,12 @@ module.exports = class Player {
     if (!this.compare) this.counter++
     if (this.subPath1Go) {
       this.initialDirection(this.direction1)
-    } else this.initialDirection(this.direction2)
+      this.direction = this.direction1
+    } else {
+      this.initialDirection(this.direction2)
+      this.direction = this.direction2;
+    }
+      
 
     this.targetX = this.nextVertex.x + this.radius;
     this.targetY = this.nextVertex.y + this.radius;
