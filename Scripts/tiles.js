@@ -25,15 +25,12 @@ const tiles = {
     c.drawImage(roadWorks, x, y, 50, 50)
   },
   drawBackground: function () {
-    c.drawImage(background, -canvas.width / 2, -canvas.width / 2, canvas.width, canvas.width)
-    c.drawImage(background, -canvas.width / 2, canvas.width / 2, canvas.width, canvas.width)
-    c.drawImage(background, -canvas.width / 2, canvas.width * 1.5, canvas.width, canvas.width)
-    c.drawImage(background, canvas.width / 2, -canvas.width / 2, canvas.width, canvas.width)
-    c.drawImage(background, canvas.width / 2, canvas.width / 2, canvas.width, canvas.width)
-    c.drawImage(background, canvas.width / 2, canvas.width * 1.5, canvas.width, canvas.width)
-    c.drawImage(background, canvas.width * 1.5, -canvas.width / 2, canvas.width, canvas.width)
-    c.drawImage(background, canvas.width * 1.5, canvas.width / 2, canvas.width, canvas.width)
-    c.drawImage(background, canvas.width * 1.5, canvas.width * 1.5, canvas.width, canvas.width)
+    for (let i = -1200; i <= 4200; i += 600) {
+      for (let j = -1200; j <= 4200; j += 600) {
+        c.drawImage(background, i, j, 600, 600)
+
+      }
+    }
   },
   reset: function (offsetX, offsetY, scale) {
     let x = (0 + offsetX) - 0.5 * canvas.width / scale;

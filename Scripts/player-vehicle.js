@@ -583,6 +583,7 @@ module.exports = class Player {
         this.nextVertex.occupied = true;
         this.currentVertex.occupiedFalse();
         this.nextVertex.speed = this.speed;
+        this.nextVertex.counter = 0;
       } else {
         // console.log('stop')
         this.stopped = true;

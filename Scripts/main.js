@@ -22,6 +22,9 @@ const speedCheck = () => {
   const arrayOfVertices = Object.keys(map.graphObj);
   for (let i = 0; i < arrayOfVertices.length; i++) {
     let thisVertex = map.graphObj[arrayOfVertices[i]]
+    if(thisVertex.value==='1A'){
+      console.log(thisVertex.speed, thisVertex.counter)
+    }
     if (thisVertex.speed) {
       thisVertex.counter++
       if (thisVertex.counter === 60) thisVertex.speed = null;
