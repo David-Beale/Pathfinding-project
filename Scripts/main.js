@@ -3,7 +3,8 @@ const Player = require('./player-vehicle')
 const Computer = require('./computer-vehicle')
 const { drawMap, setUpGraph, map } = require('./map')
 const drawLights = require('./traffic-lights')
-const { drawYellowCircle, drawTraffic, reset, drawBackground,lake } = require('./tiles.js')
+const roadWorks = require('./road-works')
+const { drawYellowCircle, drawTraffic, reset, drawBackground, lake } = require('./tiles.js')
 const tiles = require('./tiles.js')
 
 
@@ -23,6 +24,16 @@ const trafficVisFunc = () => {
     const vertex = map.graphObj[arrayOfVertices[index]]
     vertex.occupiedCheck();
     drawTraffic(vertex.x, vertex.y, vertex.getAverageTime())
+  }
+}
+const speedCheck = () => {
+  const arrayOfVertices = Object.keys(map.graphObj);
+  for (let i = 0; i < arrayOfVertices.length; i++) {
+    let thisVertex = map.graphObj[arrayOfVertices[i]]
+    if (thisVertex.speed) {
+      thisVertex.counter ++
+      if(thisVertex.counter === 60) thisVertex.speed = null;
+    }
   }
 }
 
@@ -46,15 +57,17 @@ $(() => {
     requestAnimationFrame(animate);
     if (start) {
       if (tiles.cameraLock) {
-        let diffX = (tiles.width / (2*tiles.cameraScale)) - (player.currentX - tiles.cameraX/tiles.cameraScale);
-        let diffY = (tiles.height / (2*tiles.cameraScale)) - (player.currentY - tiles.cameraY/tiles.cameraScale);
+        let diffX = (tiles.width / (2 * tiles.cameraScale)) - (player.currentX - tiles.cameraX / tiles.cameraScale);
+        let diffY = (tiles.height / (2 * tiles.cameraScale)) - (player.currentY - tiles.cameraY / tiles.cameraScale);
         tiles.translate(diffX, diffY);
-        tiles.cameraX -= diffX*tiles.cameraScale;
-        tiles.cameraY -= diffY*tiles.cameraScale;
+        tiles.cameraX -= diffX * tiles.cameraScale;
+        tiles.cameraY -= diffY * tiles.cameraScale;
       }
       reset(tiles.cameraX, tiles.cameraY, tiles.cameraScale);
       drawBackground();
       drawMap();
+      roadWorks()
+      speedCheck();
       // lake(1200,800);
       drawLights(counter, map, override);
       counter++;
@@ -118,11 +131,14 @@ $(() => {
   let override = true;
   let collisionVis = false;
   let trafficVis = false
+  let roadWorksAdd = false;
+  let roadWorksRemove = false
   let compareClickCount = 0;
   generateComps(numberOfComputers)
   animate();
+  let roadWorksMouseDown = false;
   $("canvas").mousedown(function (e) {
-    if (e.which===3) {
+    if (e.which === 3 && !roadWorksAdd && !roadWorksRemove) {
       e.preventDefault
       player.click = true;
       player.event = e;
@@ -137,8 +153,29 @@ $(() => {
         $('#text').html('Select a method')
         compareClickCount = 2;
       }
+    } else if (e.which === 3 && (roadWorksAdd || roadWorksRemove)) {
+      roadWorksMouseDown = true
     }
-  });
+  }).mousemove(function (e) {
+    if (roadWorksMouseDown === true) {
+      let xCoord = (e.pageX + tiles.cameraX) / tiles.cameraScale
+      let yCoord = (e.pageY + tiles.cameraY) / tiles.cameraScale
+      let clickX = Math.floor(xCoord / 50) * 50;
+      let clickY = Math.floor(yCoord / 50) * 50;
+      for (let i = 0; i < arrayOfVertices.length; i++) {
+        let thisVertex = map.graphObj[arrayOfVertices[i]]
+        if (thisVertex.x === clickX && thisVertex.y === clickY) {
+          if (roadWorksAdd) {
+            thisVertex.roadWorks = true;
+          } else thisVertex.roadWorks = false
+          i = arrayOfVertices.length //end loop when found
+        }
+      }
+    }
+  })
+    .mouseup(function () {
+      roadWorksMouseDown = false;
+    })
 
   $("#distance").on('click', function () {
     player.pathfinding = 'dijkstra';
@@ -150,7 +187,7 @@ $(() => {
       player.compare = false;
       player.compareReady = false;
       $('#compare').removeClass("selected")
-      $("#distance-info").toggleClass("hidden");  
+      $("#distance-info").toggleClass("hidden");
       $("#text").toggleClass("hidden");
       $("#time-info").toggleClass("hidden");
     }
@@ -210,13 +247,38 @@ $(() => {
   });
   $("#tips").mouseenter(function () {
     $('#tips-box').removeClass('hidden');
-  }).mouseleave(function() {
+  }).mouseleave(function () {
     $('#tips-box').addClass('hidden');
   })
+  //Road Works buttons//
+  $("#roadWorksOn").mouseenter(function () {
+    $('#tips-box2').removeClass('hidden');
+  }).mouseleave(function () {
+    $('#tips-box2').addClass('hidden');
+  })
+
+  $("#roadWorksOff").mouseenter(function () {
+    $('#tips-box2').removeClass('hidden');
+  }).mouseleave(function () {
+    $('#tips-box2').addClass('hidden');
+  })
+
+  $("#roadWorksOn").on('click', function () {
+    $("#roadWorksOff").removeClass("selected")
+    roadWorksAdd = !roadWorksAdd
+    roadWorksRemove = false;
+  })
+  $("#roadWorksOff").on('click', function () {
+    $("#roadWorksOn").removeClass("selected")
+    roadWorksRemove = !roadWorksRemove
+    roadWorksAdd = false;
+  })
+
+  //Options Menu//
   let menuClosed = true;
   $("#menu").on('click', function () {
     $('#menu').toggleClass('change');
-    if(menuClosed){
+    if (menuClosed) {
       $('#options2').slideDown('slow', () => {
         $('#options2buttons').fadeIn(400)
       })
@@ -253,10 +315,10 @@ $(() => {
     $("#user-speed-slider").slider({
       value: 5,
       min: 1,
-      max: 5,
-      step: 4,
+      max: 8,
+      step: 1,
       slide: function (event, ui) {
-        player.speed = ui.value;
+        player.speedChange(ui.value);
       }
     });
   });
@@ -264,11 +326,11 @@ $(() => {
     $("#computer-speed-slider").slider({
       value: 5,
       min: 1,
-      max: 5,
-      step: 4,
+      max: 10,
+      step: 1,
       slide: function (event, ui) {
         for (let i = 0; i < numberOfComputers; i++) {
-          computerArray[i].speed = ui.value;
+          computerArray[i].masterSpeed = ui.value;
         }
       }
     });

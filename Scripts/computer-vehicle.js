@@ -4,6 +4,7 @@ module.exports = class Computer {
   constructor(value, map, vertex) {
     this.value = value;
     this.radius = 25;
+    this.masterSpeed = 5;
     this.speed = 5;
     // this.arrayOfVertices = Object.keys(map.graphObj);
     // let randomVertex = this.arrayOfVertices[Math.floor(Math.random() * this.arrayOfVertices.length)]
@@ -37,6 +38,12 @@ module.exports = class Computer {
     }
     this.currentX += this.dx;
     this.currentY += this.dy;
+
+    this.counter ++
+    if (this.counter === this.maxCounter) {
+      this.dx = this.targetX - this.currentX
+      this.dy = this.targetY - this.currentY
+    }
     if (this.currentX === this.targetX && this.currentY === this.targetY) {
       this.requireNewPath = true;
     }
@@ -80,6 +87,10 @@ module.exports = class Computer {
     else {
       let rand = Math.floor(Math.random() * this.possibleDestinations.length)
       this.nextVertex = this.map.graphObj[this.possibleDestinations[rand]];
+
+      this.speedCheck()
+      this.maxCounter = Math.floor(50/this.speed)
+      this.counter = 0
       if (this.nextVertex.occupied || (this.currentVertex.light !== 'green')) {
         this.dx = 0;
         this.dy = 0;
@@ -91,16 +102,21 @@ module.exports = class Computer {
         this.requireNewPath = false;
         this.currentVertex.occupiedFalse();
         this.nextVertex.occupied = true;
+        this.nextVertex.speed = this.speed;
+        this.nextVertex.counter = 0;
         // this.nextVertex.speed = this.speed;
         this.nextDirection()
         this.currentVertex = this.nextVertex;
       }
     }
-    //GET DIRECTIONS TO NEXT DESTINATION
-    
-
-    
-
   }
-
+  speedCheck () {
+    if (this.nextVertex.roadWorks) {
+      this.speed = 1
+    } else (this.speed = this.masterSpeed)
+    if(this.nextVertex.speed && this.nextVertex.speed < this.speed) {
+      this.speed = this.nextVertex.speed
+    } 
+    
+  }
 }

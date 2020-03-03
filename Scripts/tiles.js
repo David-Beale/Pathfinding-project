@@ -10,7 +10,8 @@ canvas.height = window.innerHeight;
 const background = new Image();
 background.src = "./Assets/FoilageGrass_1.jpg";
 const c = canvas.getContext('2d');
-
+const roadWorks = new Image();
+roadWorks.src = "./Assets/roadworks.jpg";
 
 const tiles = {
   drawCar: function (x, y, degrees, car) {
@@ -19,6 +20,9 @@ const tiles = {
     c.rotate(degrees * Math.PI / 180);
     c.drawImage(car, -25, -12.5, 50, 25);
     c.restore();
+  },
+  drawRoadWorks: function (x, y) {
+    c.drawImage(roadWorks, x, y, 50, 50)
   },
   drawBackground: function () {
     c.drawImage(background, -canvas.width / 2, -canvas.width / 2, canvas.width, canvas.width)
@@ -32,9 +36,9 @@ const tiles = {
     c.drawImage(background, canvas.width * 1.5, canvas.width * 1.5, canvas.width, canvas.width)
   },
   reset: function (offsetX, offsetY, scale) {
-    let x = (0 + offsetX) - 0.5*canvas.width/scale;
-    let y = (0 + offsetY) - 0.5*canvas.height/scale;
-    c.clearRect(x, y, 3*canvas.width/scale, 3*canvas.height/scale);
+    let x = (0 + offsetX) - 0.5 * canvas.width / scale;
+    let y = (0 + offsetY) - 0.5 * canvas.height / scale;
+    c.clearRect(x, y, 3 * canvas.width / scale, 3 * canvas.height / scale);
   },
   drawTraffic: function (x, y, average) {
     let color;
@@ -97,17 +101,17 @@ const tiles = {
   lake: function (x, y) {
     c.beginPath();
     c.fillStyle = "rgb(246,215,176)";
-    c.ellipse(x+250, y+50, 130, 320, Math.PI / 2, 0, 2 * Math.PI);
+    c.ellipse(x + 250, y + 50, 130, 320, Math.PI / 2, 0, 2 * Math.PI);
     c.fill()
     var thumbImg = document.createElement('img');
     thumbImg.src = './Assets/water.jpg';
     c.save();
     c.beginPath();
-    c.ellipse(x+250, y+50, 120, 300, Math.PI / 2, 0, 2 * Math.PI);
+    c.ellipse(x + 250, y + 50, 120, 300, Math.PI / 2, 0, 2 * Math.PI);
     c.closePath();
     c.clip();
 
-    c.drawImage(thumbImg, x-100, y-100, 700, 700);
+    c.drawImage(thumbImg, x - 100, y - 100, 700, 700);
 
     c.beginPath();
     c.ellipse(x, y, 120, 300, Math.PI / 2, 0, 2 * Math.PI);
@@ -437,9 +441,12 @@ $(() => {
   let prevY;
 
   $('canvas').mousedown(function (e) {
-    prevX = e.pageX;
-    prevY = e.pageY;
-    dragging = true;
+    if (e.which === 1) {
+      prevX = e.pageX;
+      prevY = e.pageY;
+      dragging = true;
+    }
+
   })
   $('html').mousemove(function (e) {
     if (dragging === true) {
