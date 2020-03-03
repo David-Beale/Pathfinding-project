@@ -72,17 +72,13 @@ module.exports = class Player {
     if (this.reachedDestination && this.setNewDestination) {
       this.savedDestination();
     }
-    if (!this.stopped && !this.compare)
+    if (!this.stopped && !this.compare) {
       if (this.subPath1Go) {
         this.subPath1();
       } else if (this.subPath2Go) {
         this.subPath2();
-        if (this.reset) {
-          this.reset = false;
-          this.finalX = this.targetX;
-          this.finalY = this.targetY;
-        }
       }
+    }
     if (this.requireNewPath) {
       this.findNewPath();
     }
@@ -103,6 +99,11 @@ module.exports = class Player {
     //in transit repathing.
     if (this.requireNewPath) {
       this.findNewPath();
+    }
+    if(this.reset && !this.subPath2Go && !this.subPath1Go){
+      this.reset = false
+      this.finalX = this.targetX;
+      this.finalY = this.targetY;
     }
     if (!this.reachedDestination) {
       // if comparison mode is on, we pause the user car, and display only the 2 possible paths
@@ -137,7 +138,7 @@ module.exports = class Player {
         } else {
           this.currentX += this.dx;
           this.currentY += this.dy;
-          console.log('current', this.currentX, this.currentY, 'target', this.targetX, this.targetY, 'delta', this.dx, this.dy)
+          // console.log('current', this.currentX, this.currentY, 'target', this.targetX, this.targetY, 'delta', this.dx, this.dy)
           if (this.currentX === this.finalX && this.currentY === this.finalY) {
             this.requireNewPath = false;
             this.reachedDestination = true;
@@ -162,15 +163,14 @@ module.exports = class Player {
 
   ///////////////Functions/////////////////////
   collissionCheck () {
-    console.log('check', this.nextVertex.occupied, this.currentVertex.light, this.compare)
+    // console.log('check', 'next', this.nextVertex.occupied, this.nextVertex.value, 'current', this.currentVertex.occupied, this.currentVertex.value, this.compare)
     if (!this.nextVertex.occupied && this.currentVertex.light === 'green' && !this.compare) {
       this.currentVertex.occupiedFalse();
       this.nextVertex.occupied = true;
+      this.nextVertex.speed = this.speed;
       this.dx = this.saveDx;
       this.dy = this.saveDy;
       this.stopped = false;
-      // this.currentX = this.currentVertex.x;
-      // this.currentY = this.currentVertex.y;
     }
   }
   drawNew () {
@@ -218,6 +218,7 @@ module.exports = class Player {
   }
   //saved destination will be run if we have selected an in transit destination change. 
   savedDestination () {
+    // console.log('replacing array')
     this.setNewDestination = false;
     this.currentX = this.nextVertex.x + this.radius;
     this.currentY = this.nextVertex.y + this.radius;
@@ -230,6 +231,7 @@ module.exports = class Player {
     this.reachedDestination = false;
   }
   secondClick () {
+    // console.log('click')
     //If we have an in transit destination change, we will save the new path in memory. The vehicle will continue to the next vertex, then the new path will be applied using savedDestination().
     if (!this.reachedDestination) {
       for (let i = 0; i < this.arrayOfVertices.length; i++) {
@@ -416,7 +418,7 @@ module.exports = class Player {
       this.targetX = this.nextVertex.x + this.radius;
       this.targetY = this.nextVertex.y + this.radius;
     }
-    if (this.counter === this.stepCount && !this.subPath1Go){
+    if (this.counter === this.stepCount && !this.subPath1Go) {
       this.dx = this.targetX - this.currentX;
       this.dy = this.targetY - this.currentY;
     }
@@ -448,7 +450,7 @@ module.exports = class Player {
     let [startX, startY] = this.getStartingCoords(this.direction1, this.movement2);
     this.targetCornerX = Math.round(startX - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
     this.targetCornerY = Math.round(startY - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
-    if (this.counter === this.stepCount){
+    if (this.counter === this.stepCount) {
       this.dx = this.targetX - this.currentX;
       this.dy = this.targetY - this.currentY;
     } else {
@@ -483,7 +485,7 @@ module.exports = class Player {
     let [startX, startY] = this.getStartingCoords(this.direction1, this.movement2);
     this.targetCornerX = Math.round(startX - (this.radius * Math.sin(Math.PI / 180 * (this.angle))))
     this.targetCornerY = Math.round(startY - (this.radius * Math.cos(Math.PI / 180 * (this.angle))))
-    if (this.counter === this.stepCount){
+    if (this.counter === this.stepCount) {
       this.dx = this.targetX - this.currentX;
       this.dy = this.targetY - this.currentY;
     } else {
@@ -530,7 +532,7 @@ module.exports = class Player {
   }
 
   findNewPath () {
-    console.log('new path')
+    // console.log('new path')
     if (this.index === this.pathArray.length - 1) {
       this.reachedDestination = true;
       this.requireNewPath = false;
@@ -538,7 +540,9 @@ module.exports = class Player {
       this.dy = 0
     } else {
       this.currentVertex = this.map.graphObj[this.pathArray[this.index]]
+      // console.log('set new current', this.currentVertex.value, 'index', this.index)
       this.nextVertex = this.map.graphObj[this.pathArray[this.index + 1]]
+      // console.log('set new next', this.nextVertex.value)
       if (this.changeSpeedCheck) {
         this.speed = this.masterSpeed
         this.changeSpeedCheck = false;
@@ -569,17 +573,18 @@ module.exports = class Player {
       this.counter = 0;
       this.subPath1Go = true;
       this.subPath2Go = true;
-      this.stepCount = Math.floor((50 / this.speed)/2);
+      this.stepCount = Math.floor((50 / this.speed) / 2);
       this.subPath1();
 
 
       this.requireNewPath = false;
       if (!this.nextVertex.occupied && this.currentVertex.light === 'green' && !this.compare) {
+        // console.log('next vertex occupied', this.nextVertex.value, 'current vertex clear', this.currentVertex.value)
         this.nextVertex.occupied = true;
         this.currentVertex.occupiedFalse();
         this.nextVertex.speed = this.speed;
       } else {
-        console.log('stop')
+        // console.log('stop')
         this.stopped = true;
         this.saveDx = this.dx;
         this.saveDy = this.dy;

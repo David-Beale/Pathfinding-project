@@ -17,22 +17,14 @@ const collisionZone = () => {
     }
   }
 }
-const trafficVisFunc = () => {
-  const arrayOfVertices = Object.keys(map.graphObj);
-  for (let index = 0; index < arrayOfVertices.length; index++) {
 
-    const vertex = map.graphObj[arrayOfVertices[index]]
-    vertex.occupiedCheck();
-    drawTraffic(vertex.x, vertex.y, vertex.getAverageTime())
-  }
-}
 const speedCheck = () => {
   const arrayOfVertices = Object.keys(map.graphObj);
   for (let i = 0; i < arrayOfVertices.length; i++) {
     let thisVertex = map.graphObj[arrayOfVertices[i]]
     if (thisVertex.speed) {
-      thisVertex.counter ++
-      if(thisVertex.counter === 60) thisVertex.speed = null;
+      thisVertex.counter++
+      if (thisVertex.counter === 60) thisVertex.speed = null;
     }
   }
 }
@@ -82,14 +74,22 @@ $(() => {
 
 
       // /////////traffic visualiser
-      if (trafficVis) {
-        trafficVisFunc()
+
+      const arrayOfVertices = Object.keys(map.graphObj);
+      for (let index = 0; index < arrayOfVertices.length; index++) {
+
+        const vertex = map.graphObj[arrayOfVertices[index]]
+        vertex.occupiedCheck();
+        if (trafficVis) {
+          drawTraffic(vertex.x, vertex.y, vertex.getAverageTime())
+        }
       }
+
 
       player.run();
       if (player.compare && compareClickCount === 2) {
-        $('#distance-info').html(`Distance: ${player.comparePaths.distance.distance}<br> Time: ${Math.round(player.comparePaths.distance.time)}`)
-        $('#time-info').html(`Distance: ${player.comparePaths.time.distance}<br> Time: ${Math.round(player.comparePaths.time.time)}`)
+        $('#distance-info').html(`Distance: ${player.comparePaths.distance.distance}<br> Time: ${Math.round((player.comparePaths.distance.time)/60)} s`)
+        $('#time-info').html(`Distance: ${player.comparePaths.time.distance}<br> Time: ${Math.round((player.comparePaths.time.time)/60)} s`)
       }
 
       for (let i = 0; i < numberOfComputers; i++) {
