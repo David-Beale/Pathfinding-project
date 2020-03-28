@@ -3,7 +3,7 @@ https://david-beale.github.io/Pathfinding-project/
 
 ![screenshot](https://user-images.githubusercontent.com/59053870/77824068-affc4500-70f7-11ea-86c1-b7d16cf41b56.jpg)
 
-This is my 1 week solo project which is based on Dijkstra's algorithm. The purpose of the project was to visualise the pathfinding algorithm in real-time and make the application interactive and user-friendly. I used this an an opportunity to apply the knowledge I gained so far and challenge myself to develop a functinoal program without any step by step tutorials/guides.
+This is my 1 week solo project which is based on Dijkstra's algorithm. The purpose of the project was to visualise the pathfinding algorithm in real-time and make the application interactive and user-friendly. I used this an opportunity to apply the knowledge I gained so far and challenge myself to develop a functional program without any step by step tutorials/guides.
 
 ## How to use it
 ###### There is a tips icon which gives the user some basic instructions:
@@ -12,7 +12,7 @@ This is my 1 week solo project which is based on Dijkstra's algorithm. The purpo
 -Use the scroll wheel to zoom in and out.
 
 ###### Main buttons: 
--Clicking "shortest distance" or "fastest time" will set the default pahtfinding algorithm.
+-Clicking "shortest distance" or "fastest time" will set the default pathfinding algorithm.
 -Clicking "compare" allows the user to compare the 2 algorithms. Differences will only arise when congestion occurs.
 
 ###### Click the menu item to access additional features:
@@ -31,8 +31,8 @@ This is my 1 week solo project which is based on Dijkstra's algorithm. The purpo
 - Curved trajectories - the user vehicle will follow a curved trajectory when turning. I tried implementing this feature for all vehicles; however, the simplistic pathfinding of these vehicles resulted in a high probability of irreversible gridlock at junctions.
 - Traffic lights - vehicles will stop and queue when the light is red or yellow and will continue on green lights.
 - Collision prevention - vehicles will stop when the vehicle in front stops. They will also slow down when the vehicle in front slows down, or when road conditions require it.
-- In transit destination change - the user can change the destination while the vehicle is still enroute to another destination. The vehicle will calculate and store the new path, and when the vehicle has reached the next vertex, this path will be loaded and followed.
-- Camera - the user can maipulate the camera view by dragging the map around, or zooming in and out. The user can also lock the camera onto the vehicle, and will follow the it until it is disabled.
+- In transit destination change - the user can change the destination while the vehicle is still en route to another destination. The vehicle will calculate and store the new path, and when the vehicle has reached the next vertex, this path will be loaded and followed.
+- Camera - the user can manipulate the camera view by dragging the map around, or zooming in and out. The user can also lock the camera onto the vehicle, and will follow it until it is disabled.
 - Visual click feedback - a pulse is created when the user right clicks on the road.
 
 ## Installation
