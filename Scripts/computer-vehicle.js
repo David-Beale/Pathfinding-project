@@ -1,4 +1,4 @@
-const { drawRedCircle, drawCar } = require('./tiles.js')
+const { drawCar } = require('./tiles.js')
 
 module.exports = class Computer {
   constructor(value, map, vertex) {
@@ -6,9 +6,7 @@ module.exports = class Computer {
     this.radius = 25;
     this.masterSpeed = 5;
     this.speed = 5;
-    // this.arrayOfVertices = Object.keys(map.graphObj);
-    // let randomVertex = this.arrayOfVertices[Math.floor(Math.random() * this.arrayOfVertices.length)]
-    this.currentVertex = map.graphObj[vertex] //map.graphObj[1]; //
+    this.currentVertex = map.graphObj[vertex]
     this.nextVertex = null;
     this.targetX = null
     this.targetY = null
@@ -31,19 +29,19 @@ module.exports = class Computer {
 
 
   run () {
-    // drawRedCircle(this.currentX, this.currentY, this.radius)
     drawCar(this.currentX - this.radius, this.currentY - this.radius / 2, this.direction, this.computerCar)
     if (this.requireNewPath) {
       this.findNewPath();
     }
     this.currentX += this.dx;
     this.currentY += this.dy;
-
+    //A counter is used to overcome an issue where floating point numbers prevent the car from reaching the target coords. The next movement will be the difference between the target and the current coords.
     this.counter ++
     if (this.counter === this.maxCounter) {
       this.dx = this.targetX - this.currentX
       this.dy = this.targetY - this.currentY
     }
+    //if the vehicle has reached its target, find a new target
     if (this.currentX === this.targetX && this.currentY === this.targetY) {
       this.requireNewPath = true;
     }
@@ -78,8 +76,9 @@ module.exports = class Computer {
   }
 
   findNewPath () {
+    //A random destination is chosen from possible options
     this.possibleDestinations = this.currentVertex.getEdges();
-
+    //If there are no options, the car will stop.
     if (this.possibleDestinations.length < 1) {
       this.dx = 0;
       this.dy = 0;
@@ -91,25 +90,23 @@ module.exports = class Computer {
       this.speedCheck()
       this.maxCounter = Math.floor(50/this.speed)
       this.counter = 0
+      //traffic light & collision check
       if (this.nextVertex.occupied || (this.currentVertex.light !== 'green')) {
         this.dx = 0;
         this.dy = 0;
       }
-      // if(this.nextVertex.occupied && this.nextVertex.speed < this.speed){
-      //   this.speed = this.nextVertex.speed
-      // } 
       else {
         this.requireNewPath = false;
         this.currentVertex.occupiedFalse();
         this.nextVertex.occupied = true;
         this.nextVertex.speed = this.speed;
         this.nextVertex.counter = 0;
-        // this.nextVertex.speed = this.speed;
         this.nextDirection()
         this.currentVertex = this.nextVertex;
       }
     }
   }
+  //Speed check limits the vehicle speed if there are roadworks, or if a car in front is moving slowly.
   speedCheck () {
     if (this.nextVertex.roadWorks) {
       this.speed = 1

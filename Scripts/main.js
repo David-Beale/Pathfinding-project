@@ -7,7 +7,7 @@ const roadWorks = require('./road-works')
 const { drawYellowCircle, drawTraffic, reset, drawBackground, lake } = require('./tiles.js')
 const tiles = require('./tiles.js')
 
-
+//collision zone visualisation
 const collisionZone = () => {
   const arrayOfVerticesx = Object.keys(map.graphObj);
   for (let index = 0; index < arrayOfVerticesx.length; index++) {
@@ -17,14 +17,12 @@ const collisionZone = () => {
     }
   }
 }
-
+// A vertex will contain the speed data of cars travelling along it, so other cars can adjust their speed accordingly.
+//This is used to reset the speed of a vertex if it has no car has travelled on it in 60 frames. 
 const speedCheck = () => {
   const arrayOfVertices = Object.keys(map.graphObj);
   for (let i = 0; i < arrayOfVertices.length; i++) {
     let thisVertex = map.graphObj[arrayOfVertices[i]]
-    if(thisVertex.value==='1A'){
-      console.log(thisVertex.speed, thisVertex.counter)
-    }
     if (thisVertex.speed) {
       thisVertex.counter++
       if (thisVertex.counter === 60) thisVertex.speed = null;
@@ -39,6 +37,7 @@ $(() => {
   drawMap();
   setUpGraph();
   drawLights();
+  //counter and limit are used for traffic light control.
   let counter = 0;
   const limit = 400;
 
@@ -51,6 +50,7 @@ $(() => {
   function animate () {
     requestAnimationFrame(animate);
     if (start) {
+      //camera lock centers the camera on the car
       if (tiles.cameraLock) {
         let diffX = (tiles.width / (2 * tiles.cameraScale)) - (player.currentX - tiles.cameraX / tiles.cameraScale);
         let diffY = (tiles.height / (2 * tiles.cameraScale)) - (player.currentY - tiles.cameraY / tiles.cameraScale);
@@ -58,6 +58,7 @@ $(() => {
         tiles.cameraX -= diffX * tiles.cameraScale;
         tiles.cameraY -= diffY * tiles.cameraScale;
       }
+      //reset clears the canvas before each animation
       reset(tiles.cameraX, tiles.cameraY, tiles.cameraScale);
       drawBackground();
       drawMap();
@@ -90,11 +91,13 @@ $(() => {
 
 
       player.run();
+      //draw the data for path comparisons.
       if (player.compare && compareClickCount === 2) {
-        $('#distance-info').html(`Distance: ${player.comparePaths.distance.distance}<br> Time: ${Math.round((player.comparePaths.distance.time)/60)} s`)
-        $('#time-info').html(`Distance: ${player.comparePaths.time.distance}<br> Time: ${Math.round((player.comparePaths.time.time)/60)} s`)
+        $('#distance-info').html(`Distance: ${player.comparePaths.distance.distance}<br> Time: ${Math.round((player.comparePaths.distance.time) / 60)} s`)
+        $('#time-info').html(`Distance: ${player.comparePaths.time.distance}<br> Time: ${Math.round((player.comparePaths.time.time) / 60)} s`)
       }
 
+      //perform computer car calcualtions and rendering
       for (let i = 0; i < numberOfComputers; i++) {
         computerArray[i].run()
       }
@@ -119,6 +122,7 @@ $(() => {
     computerArray = [];
     let usedVertices = [];
     for (let i = 0; i < num; i++) {
+      //function to ensure computer cars are not generated on top of eachother
       let firstRun = true;
       let randomVertex;
       while (firstRun || usedVertices.includes(randomVertex)) {
@@ -145,17 +149,19 @@ $(() => {
       e.preventDefault
       player.click = true;
       player.event = e;
-      //// If there is no player car already on the map:
+      //// If there is no player car already on the map and we are comparing paths:
       if (player.compare && !compareClickCount) {
         $('#text').html('Select a destination')
         compareClickCount = 1;
       }
+      //If there is a player car on the map
       else if (player.compare && compareClickCount === 1) {
         $('#distance').removeClass("selected")
         $('#time').removeClass("selected")
         $('#text').html('Select a method')
         compareClickCount = 2;
       }
+      //add roadworks
     } else if (e.which === 3 && (roadWorksAdd || roadWorksRemove)) {
       roadWorksMouseDown = true
     }
@@ -179,7 +185,7 @@ $(() => {
     .mouseup(function () {
       roadWorksMouseDown = false;
     })
-
+    //car will follow the shortest path to the destination
   $("#distance").on('click', function () {
     player.pathfinding = 'dijkstra';
     if (player.compare && compareClickCount === 2) {
@@ -194,7 +200,7 @@ $(() => {
       $("#text").toggleClass("hidden");
       $("#time-info").toggleClass("hidden");
     }
-  });
+  });//car will follow the quickest path to the destination
   $("#time").on('click', function () {
     player.pathfinding = 'dijkstra-time';
     if (player.compare && compareClickCount === 2) {
@@ -234,11 +240,11 @@ $(() => {
       $('#time').removeClass("selected")
     }
   });
-
+  //start/stop button
   $("#start").on('click', function () {
     start = !start;
   });
-
+  //traffic lights on/off
   $("#lights").on('click', function () {
     override = !override;
   });

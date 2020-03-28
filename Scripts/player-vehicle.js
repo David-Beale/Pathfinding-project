@@ -55,23 +55,26 @@ module.exports = class Player {
 
 
   run () {
-
+    //First click draws a growing circle.
     if (this.init) {
       this.drawNew();
     }
-
+    //A pulse is used as visual feedback for a  click .
     if (this.pulseCircle) {
       this.doPulseCircle();
     }
+    //If the car has reached its destination, it will stop
     if (this.ready && this.reachedDestination && this.secondClicked) {
       this.start = this.end;
       this.index = 0;
       this.dx = 0;
       this.dy = 0;
     }
+     //This is used for the intransit destination change. The car will go to the next vertex, then load the new path.
     if (this.reachedDestination && this.setNewDestination) {
       this.savedDestination();
     }
+    //Calculate the next step enroute to the target destination
     if (!this.stopped && !this.compare) {
       if (this.subPath1Go) {
         this.subPath1();
@@ -79,6 +82,7 @@ module.exports = class Player {
         this.subPath2();
       }
     }
+    //If the car has reached the next target, the new target path is calcualted.
     if (this.requireNewPath) {
       this.findNewPath();
     }
@@ -100,7 +104,9 @@ module.exports = class Player {
     if (this.requireNewPath) {
       this.findNewPath();
     }
-    if(this.reset && !this.subPath2Go && !this.subPath1Go){
+    //Part of the intransit destination change. The vehicle will continue to the next vertex in its current path, then change its path.
+    //This is required to ensure curved trajectories are completed before changing its path.
+    if (this.reset && !this.subPath2Go && !this.subPath1Go) {
       this.reset = false
       this.finalX = this.targetX;
       this.finalY = this.targetY;
@@ -133,12 +139,12 @@ module.exports = class Player {
         } else {
           this.drawSavedPath();
         }
+        //If the car has stopped, it will continue to check whether it can continue moving.
         if (this.stopped) {
           this.collissionCheck();
         } else {
           this.currentX += this.dx;
           this.currentY += this.dy;
-          // console.log('current', this.currentX, this.currentY, 'target', this.targetX, this.targetY, 'delta', this.dx, this.dy)
           if (this.currentX === this.finalX && this.currentY === this.finalY) {
             this.requireNewPath = false;
             this.reachedDestination = true;
@@ -163,7 +169,6 @@ module.exports = class Player {
 
   ///////////////Functions/////////////////////
   collissionCheck () {
-    // console.log('check', 'next', this.nextVertex.occupied, this.nextVertex.value, 'current', this.currentVertex.occupied, this.currentVertex.value, this.compare)
     if (!this.nextVertex.occupied && this.currentVertex.light === 'green' && !this.compare) {
       this.currentVertex.occupiedFalse();
       this.nextVertex.occupied = true;
@@ -218,7 +223,6 @@ module.exports = class Player {
   }
   //saved destination will be run if we have selected an in transit destination change. 
   savedDestination () {
-    // console.log('replacing array')
     this.setNewDestination = false;
     this.currentX = this.nextVertex.x + this.radius;
     this.currentY = this.nextVertex.y + this.radius;
@@ -231,7 +235,6 @@ module.exports = class Player {
     this.reachedDestination = false;
   }
   secondClick () {
-    // console.log('click')
     //If we have an in transit destination change, we will save the new path in memory. The vehicle will continue to the next vertex, then the new path will be applied using savedDestination().
     if (!this.reachedDestination) {
       for (let i = 0; i < this.arrayOfVertices.length; i++) {
@@ -269,7 +272,7 @@ module.exports = class Player {
             this.dijkstraResult = dijkstraTime(this.map.graphObj, this.end, this.arrayOfVertices[i]);
             this.pathColor = 'yellow';
           }
-
+          //the new path data is saved, ready to be loaded when the car is ready.
           this.save = {
             end: this.arrayOfVertices[i],
             finalX: this.clickX,
@@ -532,7 +535,6 @@ module.exports = class Player {
   }
 
   findNewPath () {
-    // console.log('new path')
     if (this.index === this.pathArray.length - 1) {
       this.reachedDestination = true;
       this.requireNewPath = false;
@@ -540,9 +542,7 @@ module.exports = class Player {
       this.dy = 0
     } else {
       this.currentVertex = this.map.graphObj[this.pathArray[this.index]]
-      // console.log('set new current', this.currentVertex.value, 'index', this.index)
       this.nextVertex = this.map.graphObj[this.pathArray[this.index + 1]]
-      // console.log('set new next', this.nextVertex.value)
       if (this.changeSpeedCheck) {
         this.speed = this.masterSpeed
         this.changeSpeedCheck = false;
@@ -579,13 +579,11 @@ module.exports = class Player {
 
       this.requireNewPath = false;
       if (!this.nextVertex.occupied && this.currentVertex.light === 'green' && !this.compare) {
-        // console.log('next vertex occupied', this.nextVertex.value, 'current vertex clear', this.currentVertex.value)
         this.nextVertex.occupied = true;
         this.currentVertex.occupiedFalse();
         this.nextVertex.speed = this.speed;
         this.nextVertex.counter = 0;
       } else {
-        // console.log('stop')
         this.stopped = true;
         this.saveDx = this.dx;
         this.saveDy = this.dy;

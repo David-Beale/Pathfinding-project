@@ -416,7 +416,7 @@ const tiles = {
 
 }
 $(() => {
-
+  //camera centers on vehicle
   $("#lock").on('click', function () {
     const player = require('./main')
 
@@ -436,7 +436,7 @@ $(() => {
   let dragging = false;
   let prevX;
   let prevY;
-
+  //move map around
   $('canvas').mousedown(function (e) {
     if (e.which === 1) {
       prevX = e.pageX;
@@ -461,7 +461,7 @@ $(() => {
       dragging = false
     })
 
-
+    //zoom in and out
   $('canvas').bind('mousewheel', function (e) {
     if (e.originalEvent.wheelDelta / 120 > 0) {
       c.scale(1.25, 1.25)
